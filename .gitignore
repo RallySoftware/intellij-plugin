@@ -1,14 +1,15 @@
 *.DS_Store
 *~
 
-*.iws
-*.ipr
-*.iml
-.idea
+.idea/workspace.xml
+.idea/tasks.xml
 out
 
 .gradle
 .gradletasknamecache
 build
 
-rally_intellij.jar
+libs
+libs-test
+
+rally-intellij-plugin.zip
