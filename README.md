@@ -7,3 +7,6 @@ Implements Intellij's Agile ALM.
 * http://confluence.jetbrains.net/display/IDEADEV/IntelliJ+IDEA+Plugin+Structure#IntelliJIDEAPluginStructure-PluginExtensions
 * http://git.jetbrains.org/?p=idea/community.git;a=blob;f=platform/platform-resources/src/META-INF/LangExtensionPoints.xml;hb=HEAD
 * http://git.jetbrains.org/?p=idea/community.git;a=blob;f=platform/platform-resources/src/META-INF/PlatformExtensionPoints.xml;hb=HEAD
+
+
+This software is released under the [MIT License](license.txt).
