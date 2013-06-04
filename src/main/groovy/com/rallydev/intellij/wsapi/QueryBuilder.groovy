@@ -65,12 +65,14 @@ class QueryBuilder {
         @Override
         String toString() {
             switch (this) {
-                case Operator.eq:
+                case eq:
                     return '='
-                case Operator.contains:
+                case contains:
                     return 'contains'
-                case Operator.gt:
+                case gt:
                     return '>'
+                default:
+                    throw new IllegalArgumentException()
             }
         }
     }

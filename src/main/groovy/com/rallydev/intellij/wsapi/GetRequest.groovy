@@ -7,12 +7,12 @@ class GetRequest {
     static int MAX_PAGE_SIZE = 200
     static int MIN_PAGE_SIZE = 1
 
-    ApiObject wsapiObject
+    ApiEndpoint wsapiObject
     String objectId
 
     Map<String, String> params = [:]
 
-    GetRequest(ApiObject wsapiObject) {
+    GetRequest(ApiEndpoint wsapiObject) {
         this.wsapiObject = wsapiObject
     }
 

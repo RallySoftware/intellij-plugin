@@ -1,5 +1,6 @@
 package com.rallydev.intellij.task;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.impl.BaseRepository;
 import com.intellij.tasks.impl.BaseRepositoryImpl;
@@ -7,8 +8,6 @@ import com.intellij.util.xmlb.annotations.Tag;
 import com.rallydev.intellij.config.RallyConfig;
 import com.rallydev.intellij.wsapi.ConnectionTest;
 import com.rallydev.intellij.wsapi.RallyClient;
-import com.rallydev.intellij.wsapi.queries.TaskFromIdQuery;
-import com.rallydev.intellij.wsapi.queries.TasksFilteredQuery;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
@@ -17,6 +16,7 @@ import java.util.Collection;
 
 @Tag("Rally")
 public class RallyRepository extends BaseRepositoryImpl {
+    private static final Logger log = Logger.getInstance(RallyRepository.class);
 
     public String workspaceId;
     public String testField;
@@ -42,14 +42,15 @@ public class RallyRepository extends BaseRepositoryImpl {
 
     @Override
     public Task[] getIssues(@Nullable String query, int max, long since) throws Exception {
-        Collection<RallyTask> rallyTasks = new TasksFilteredQuery(getClient()).findTasks(query, max, since);
+        Collection<RallyTask> rallyTasks = new WsapiQuery(getClient()).findTasks(query, max, since);
         return rallyTasks.toArray(new RallyTask[rallyTasks.size()]);
     }
 
     @Nullable
     @Override
     public Task findTask(String id) throws Exception {
-        return new TaskFromIdQuery(getClient()).findTask(id);
+        log.info("RallyRepository.findTask(String) invoked.");
+        return new WsapiQuery(getClient()).findTask(id);
     }
 
     @Override

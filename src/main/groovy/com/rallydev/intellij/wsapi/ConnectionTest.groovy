@@ -11,7 +11,7 @@ class ConnectionTest {
     }
 
     void doTest() throws Exception {
-        ApiResponse response = rallyClient.makeRequest(new GetRequest(ApiObject.WORKSPACE))
+        ApiResponse response = rallyClient.makeRequest(new GetRequest(ApiEndpoint.WORKSPACE))
         if (!response?.results) {
             throw new RuntimeException("Incorrect response from server\n${response ?: 'No response'}")
         }

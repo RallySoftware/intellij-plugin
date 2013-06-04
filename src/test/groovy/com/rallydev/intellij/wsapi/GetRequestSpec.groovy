@@ -7,7 +7,7 @@ class GetRequestSpec extends Specification {
     def "Simple object, no filter"() {
         given:
         String rallyUri = 'https://rally1.rallydev.com/'
-        GetRequest wsapiRequest = new GetRequest(ApiObject.WORKSPACE)
+        GetRequest wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE)
 
         expect:
         wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js"
@@ -16,7 +16,7 @@ class GetRequestSpec extends Specification {
     def "Simple object with single query param"() {
         given:
         String rallyUri = 'https://rally1.rallydev.com/'
-        GetRequest wsapiRequest = new GetRequest(ApiObject.WORKSPACE)
+        GetRequest wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE)
                 .withFetch()
 
         expect:
@@ -26,7 +26,7 @@ class GetRequestSpec extends Specification {
     def "With objectId"() {
         given:
         String rallyUri = 'https://rally1.rallydev.com/'
-        GetRequest wsapiRequest = new GetRequest(ApiObject.WORKSPACE)
+        GetRequest wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE)
                 .withFetch()
                 .withObjectId('5')
 
@@ -37,7 +37,7 @@ class GetRequestSpec extends Specification {
     def "With query"() {
         given:
         String rallyUri = 'https://rally1.rallydev.com/'
-        GetRequest wsapiRequest = new GetRequest(ApiObject.WORKSPACE)
+        GetRequest wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE)
                 .withQuery('(Name contains "Matt")')
 
         expect:
@@ -47,7 +47,7 @@ class GetRequestSpec extends Specification {
     def "Encoded query"() {
         given:
         String rallyUri = 'https://rally1.rallydev.com/'
-        GetRequest wsapiRequest = new GetRequest(ApiObject.WORKSPACE)
+        GetRequest wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE)
                 .withQuery('(Name contains "Matt")')
 
         expect:
@@ -57,7 +57,7 @@ class GetRequestSpec extends Specification {
     def "With fetch"() {
         given:
         String rallyUri = 'https://rally1.rallydev.com/'
-        GetRequest wsapiRequest = new GetRequest(ApiObject.WORKSPACE).withFetch()
+        GetRequest wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE).withFetch()
 
         expect:
         wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js?fetch=true"
@@ -69,19 +69,19 @@ class GetRequestSpec extends Specification {
         GetRequest wsapiRequest
 
         when:
-        wsapiRequest = new GetRequest(ApiObject.WORKSPACE).withPageSize(5)
+        wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE).withPageSize(5)
 
         then:
         wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js?pagesize=5"
 
         when:
-        wsapiRequest = new GetRequest(ApiObject.WORKSPACE).withPageSize(-3)
+        wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE).withPageSize(-3)
 
         then:
         wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js?pagesize=${GetRequest.MIN_PAGE_SIZE}"
 
         when:
-        wsapiRequest = new GetRequest(ApiObject.WORKSPACE).withPageSize(200)
+        wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE).withPageSize(200)
 
         then:
         wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js?pagesize=${GetRequest.MAX_PAGE_SIZE}"

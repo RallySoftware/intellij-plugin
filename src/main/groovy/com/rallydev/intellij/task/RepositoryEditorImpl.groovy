@@ -1,13 +1,14 @@
 package com.rallydev.intellij.task
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.ui.DocumentAdapter
 import com.intellij.util.Consumer
-import com.rallydev.intellij.wsapi.queries.WorkspacesQuery
-import com.rallydev.intellij.wsapi.typedefs.Workspace
+import com.rallydev.intellij.wsapi.dao.GenericDao
+import com.rallydev.intellij.wsapi.domain.Workspace
 
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -15,44 +16,50 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
 class RepositoryEditorImpl extends RepositoryEditor {
+    static final Logger log = Logger.getInstance(RepositoryEditorImpl)
 
     Project project
     RallyRepository repository
     Consumer<RallyRepository> changeListener
 
     private boolean applying
-    private final Document document
+    private Document document
 
     public RepositoryEditorImpl(Project project, RallyRepository repository, Consumer<RallyRepository> changeListener) {
         this.project = project
         this.repository = repository
         this.changeListener = changeListener
 
-        document = EditorFactory.getInstance().createDocument(repository.getCommitMessageFormat())
+        toggleErrorPanel(false)
+
+        createDocumentWithListener(repository)
+        loadRallyWorkspaces(repository)
+        setComponentValues()
+
+        installListener(workspaces)
+        installListener(testField)
+    }
+
+    private void loadRallyWorkspaces(RallyRepository repository) {
+        try {
+            workspaces.addItem(new Workspace(name: 'Select Workspace', objectID: '-1'))
+            new GenericDao<Workspace>(repository.client, Workspace).find().each {
+                workspaces.addItem(it)
+            }
+        } catch (Exception e) {
+            log.error(e)
+            toggleErrorPanel(true)
+        }
+    }
+
+    private void createDocumentWithListener(RallyRepository repository) {
+        document = EditorFactory.instance.createDocument(repository.commitMessageFormat)
         document.addDocumentListener(new com.intellij.openapi.editor.event.DocumentAdapter() {
             @Override
             public void documentChanged(com.intellij.openapi.editor.event.DocumentEvent e) {
                 doApply()
             }
         })
-
-        errorPanel.setVisible(false)
-        workspaces.addItem(new Workspace(name: "Select Workspace", objectId: ""))
-        try {
-            new WorkspacesQuery(repository.getClient()).findAllWorkspaces().each {
-                workspaces.addItem(it)
-            }
-        } catch (Exception e) {
-            e.printStackTrace()
-            displayError()
-        }
-
-        loadFromConfig()
-
-        installListener(workspaces)
-        installListener(testField)
-
-        testField.visible = false
     }
 
     @Override
@@ -60,24 +67,23 @@ class RepositoryEditorImpl extends RepositoryEditor {
         return editorPanel
     }
 
-    private void loadFromConfig() {
+    private void setComponentValues() {
         testField.text = repository.testField
         (0..(workspaces.itemCount - 1)).each { i ->
-            if (repository.workspaceId == workspaces.getItemAt(i).objectId) {
+            if (repository.workspaceId == workspaces[i].objectID) {
                 workspaces.selectedIndex = i
             }
         }
     }
 
-    private void displayError() {
-        errorLabel.text = "Unable to connect to Rally servers"
-        errorPanel.visible = true
-        successPanel.visible = false
+    private void toggleErrorPanel(boolean showError) {
+        errorPanel.visible = showError
+        successPanel.visible = !showError
     }
 
     public void apply() {
         repository.testField = testField.text
-        repository.workspaceId = workspaces.selectedItem.objectId
+        repository.workspaceId = workspaces.selectedItem.objectID
 
         changeListener.consume(repository)
     }

@@ -6,10 +6,10 @@ class ApiObjectSpec extends Specification {
 
     def "Check toString implementation"() {
         expect:
-        (ApiObject.WORKSPACE).toString() == 'workspace'
+        (ApiEndpoint.WORKSPACE).toString() == 'workspace'
 
         and:
-        (ApiObject.HIERARCHICAL_REQUIREMENT).toString() == 'hierarchicalrequirement'
+        (ApiEndpoint.HIERARCHICAL_REQUIREMENT).toString() == 'hierarchicalrequirement'
     }
 
 }

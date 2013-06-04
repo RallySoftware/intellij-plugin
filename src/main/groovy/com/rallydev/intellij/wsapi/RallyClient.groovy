@@ -9,7 +9,7 @@ import org.apache.commons.httpclient.auth.InvalidCredentialsException
 import org.apache.commons.httpclient.methods.GetMethod
 
 class RallyClient extends HttpClient {
-    private static final Logger log = Logger.getInstance("#${this}")
+    private static final Logger log = Logger.getInstance(RallyClient)
 
     URL server
     String username
@@ -37,7 +37,7 @@ class RallyClient extends HttpClient {
             case HttpStatus.SC_UNAUTHORIZED:
                 throw new InvalidCredentialsException('The provided user name and password are not valid')
             default:
-                break
+                throw new RuntimeException('Unhandled response code')
         }
     }
 
