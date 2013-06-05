@@ -60,11 +60,7 @@ public class RallyRepository extends BaseRepositoryImpl {
     }
 
     public RallyClient getClient() throws MalformedURLException {
-        return new RallyClient(
-                new URL(RallyConfig.getInstance().url),
-                RallyConfig.getInstance().userName,
-                RallyConfig.getInstance().password
-        );
+        return RallyClient.fromConfig();
     }
 
     //Url is used in the server list, overriding to return a display name instead.

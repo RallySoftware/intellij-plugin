@@ -27,7 +27,11 @@ class GenericDao<T extends DomainObject> {
     }
 
     List<T> find(QueryBuilder query = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
-        GetRequest request = new GetRequest(ApiEndpoint.ARTIFACT)
+        //todo: look up by class or something rather than instantiating
+
+        T domainObject = domainClass.newInstance()
+
+        GetRequest request = new GetRequest(domainObject.apiEndpoint)
                 .withFetch()
                 .withPageSize(pageSize)
 

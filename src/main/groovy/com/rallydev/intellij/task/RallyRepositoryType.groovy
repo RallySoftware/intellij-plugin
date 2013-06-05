@@ -14,7 +14,7 @@ class RallyRepositoryType extends BaseRepositoryType<RallyRepository> {
 
     private static ImageIcon loadIcon() {
         try {
-            new ImageIcon(RallyRepositoryType.classLoader.getResource("rally.png"), "Rally Icon")
+            new ImageIcon(RallyRepositoryType.classLoader.getResource("rally16.png"), "Rally Icon")
         } catch (Exception e) {
             return null
         }

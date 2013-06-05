@@ -26,7 +26,10 @@
         <applicationService serviceInterface="com.rallydev.intellij.config.RallyConfig"
                             serviceImplementation="com.rallydev.intellij.config.RallyConfig"/>
 
+        <toolWindow id="Rally" icon="/rally13.png" anchor="bottom" secondary="true" factoryClass="com.rallydev.intellij.tool.RallyToolWindowImpl" />
+
         <tasks.repositoryType implementation="com.rallydev.intellij.task.RallyRepositoryType"/>
+
     </extensions>
 
 </idea-plugin>

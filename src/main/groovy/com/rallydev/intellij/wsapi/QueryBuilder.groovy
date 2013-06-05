@@ -1,5 +1,7 @@
 package com.rallydev.intellij.wsapi
 
+import groovy.transform.EqualsAndHashCode
+
 import static com.rallydev.intellij.wsapi.QueryBuilder.Operator.contains
 import static com.rallydev.intellij.wsapi.QueryBuilder.Operator.eq
 
@@ -49,6 +51,7 @@ class QueryBuilder {
         }
     }
 
+    @EqualsAndHashCode
     class Restriction {
         String attribute, value
         Operator operator
