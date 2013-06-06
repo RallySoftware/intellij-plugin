@@ -23,8 +23,19 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable instance="com.rallydev.intellij.config.RallyConfigForm"/>
+
+        <!--todo: evaluate moving to project level - or project specific workspaces -->
         <applicationService serviceInterface="com.rallydev.intellij.config.RallyConfig"
                             serviceImplementation="com.rallydev.intellij.config.RallyConfig"/>
+
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.RallyClient"
+                            serviceImplementation="com.rallydev.intellij.wsapi.RallyClient"/>
+
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCache"
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache" />
+
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCacheService"
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCacheService" />
 
         <toolWindow id="Rally" icon="/rally13.png" anchor="bottom" secondary="true" factoryClass="com.rallydev.intellij.tool.RallyToolWindowImpl" />
 

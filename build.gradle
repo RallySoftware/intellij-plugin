@@ -18,6 +18,7 @@ task 'libsTest'(type: Copy) {
 }
 
 dependencies {
+    compile 'org.simpleframework:simple-xml:2.7'
     testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
         exclude group: 'org.codehaus.groovy'
     }

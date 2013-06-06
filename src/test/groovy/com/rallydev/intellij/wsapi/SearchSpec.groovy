@@ -25,7 +25,7 @@ class SearchSpec extends Specification {
     def "search builds query and searches from dao"() {
         given:
         RallyClient rallyClient = recordingClient
-        Search<Defect> search = new Search<>(
+        Search search = new Search<>(
                 term: 'hello', rallyClient: rallyClient, searchAttributes: ['Name', 'Description'], domainClass: Defect
         )
 

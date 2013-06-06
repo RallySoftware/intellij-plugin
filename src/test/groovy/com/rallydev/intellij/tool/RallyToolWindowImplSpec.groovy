@@ -36,6 +36,19 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
         1 * toolWindow.getContentManager() >> { contentManager }
     }
 
+    def "setupWindow populates choices"() {
+        given:
+        RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()
+        rallyToolWindow.setupWindow()
+
+        expect:
+        rallyToolWindow.projectChoices.size() == projects.size()
+        
+        and:
+        rallyToolWindow.projectChoices.getItemAt(0).toString() == projects[0].name
+        rallyToolWindow.projectChoices.getItemAt(1).toString() == projects[1].name
+    }
+
     def "getType correctly determines type from drop-down"() {
         given:
         RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()

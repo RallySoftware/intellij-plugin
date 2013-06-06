@@ -32,6 +32,12 @@ class RallyClient extends HttpClient {
         this.password = password
     }
 
+    RallyClient(RallyConfig rallyConfig) {
+        this.server = new URL(rallyConfig.url)
+        this.username = rallyConfig.userName
+        this.password = rallyConfig.password
+    }
+
     ApiResponse makeRequest(GetRequest request) {
         state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password))
 

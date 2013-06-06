@@ -14,9 +14,8 @@ abstract class DomainObject {
     Date creationDate
     String _ref
 
+    //todo: remove? Needed?
     JsonObject raw
-
-    DomainObject() {}
 
     void assignProperties(JsonObject raw) {
         this.raw = raw

@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @State(
-        name = "Rally",
+        name = "Rally Config",
         storages = @Storage(file = "$APP_CONFIG$/rally.xml")
 )
 public class RallyConfig implements PersistentStateComponent<RallyConfig> {
