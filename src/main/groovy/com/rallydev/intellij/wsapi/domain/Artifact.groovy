@@ -12,6 +12,7 @@ class Artifact extends DomainObject {
     String _type
 
     String project
+    String projectName
 
     @Override
     List<String> getExcludedProperties() {
@@ -26,7 +27,8 @@ class Artifact extends DomainObject {
     @Override
     void assignProperties(JsonObject raw) {
         super.assignProperties(raw)
-        project = raw['Project']['_ref'].value
+        project = raw['Project']?.'_ref'?.value
+        projectName = raw['Project']?.'_refObjectName'?.value
     }
 
 }

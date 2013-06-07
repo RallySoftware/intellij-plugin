@@ -42,11 +42,12 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
         rallyToolWindow.setupWindow()
 
         expect:
-        rallyToolWindow.projectChoices.size() == projects.size()
+        rallyToolWindow.projectChoices.size() == projects.size() + 1
         
         and:
-        rallyToolWindow.projectChoices.getItemAt(0).toString() == projects[0].name
-        rallyToolWindow.projectChoices.getItemAt(1).toString() == projects[1].name
+        rallyToolWindow.projectChoices.getItemAt(0).toString() == ''
+        rallyToolWindow.projectChoices.getItemAt(1).toString() == projects[0].name
+        rallyToolWindow.projectChoices.getItemAt(2).toString() == projects[1].name
     }
 
     def "getType correctly determines type from drop-down"() {
@@ -124,8 +125,8 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
         SearchListener searchListener = new SearchListener(
                 window: Mock(RallyToolWindowImpl), tableModel: tableModel, search: Mock(Search),
                 results: [
-                        new Artifact(formattedID: 'S1', name: 'Story1', description: 'Some story', _type: Requirement.TYPE),
-                        new Artifact(formattedID: 'D2', name: 'Defect2', description: 'Some defect', _type: Defect.TYPE)
+                        new Artifact(formattedID: 'S1', name: 'Story1', description: 'Some story', _type: Requirement.TYPE, projectName: 'P1'),
+                        new Artifact(formattedID: 'D2', name: 'Defect2', description: 'Some defect', _type: Defect.TYPE, projectName: 'P1')
                 ]
         )
 
@@ -133,8 +134,8 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
         searchListener.run()
 
         then:
-        1 * tableModel.addRow('S1', 'Story1', 'Some story', Requirement.TYPE)
-        1 * tableModel.addRow('D2', 'Defect2', 'Some defect', Defect.TYPE)
+        1 * tableModel.addRow('S1', 'Story1', 'Some story', Requirement.TYPE, 'P1')
+        1 * tableModel.addRow('D2', 'Defect2', 'Some defect', Defect.TYPE, 'P1')
     }
 
 }

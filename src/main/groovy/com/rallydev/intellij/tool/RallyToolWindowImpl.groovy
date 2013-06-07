@@ -47,6 +47,7 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
     }
 
     void setupProjectChoices() {
+        projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
         ServiceManager.getService(ProjectCacheService.class).cachedProjects.each {
             projectChoices.addItem(new ProjectItem(project: it))
         }
@@ -58,6 +59,7 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
         tableModel.addColumn('Name')
         tableModel.addColumn('Description')
         tableModel.addColumn('Type')
+        tableModel.addColumn('Project')
     }
 
     void installSearchListener() {
@@ -99,6 +101,10 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
         searchBox.text
     }
 
+    String getSelectedProject() {
+        projectChoices.getSelectedItem()?.project?._ref
+    }
+
     static class SearchListener implements ActionListener, Runnable {
         DefaultTableModel tableModel
         List<Artifact> results
@@ -111,9 +117,12 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
         }
 
         void doActionPerformed() {
-            search.term = window.searchTerm
-            search.searchAttributes = window.searchAttributes
-            search.domainClass = window.selectedType
+            search.with {
+                term = window.searchTerm
+                searchAttributes = window.searchAttributes
+                domainClass = window.selectedType
+                project = window.selectedProject
+            }
 
             results = search.doSearch()
             SwingUtilities.invokeLater(this)
@@ -123,7 +132,7 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
             tableModel.rowCount = 0
             results.each { Artifact result ->
                 tableModel.addRow(
-                        [result.formattedID, result.name, result.description, result._type].toArray()
+                        [result.formattedID, result.name, result.description, result._type, result.projectName].toArray()
                 )
             }
         }
