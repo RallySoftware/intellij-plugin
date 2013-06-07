@@ -17,4 +17,16 @@ class ApiResponse {
         return json?.QueryResult?.Results
     }
 
+    Integer getCount() {
+        return json?.QueryResult?.TotalResultCount?.value
+    }
+
+    Integer getStartIndex() {
+        return json?.QueryResult?.StartIndex?.value
+    }
+
+    Integer getPageSize() {
+        return json?.QueryResult?.PageSize?.value
+    }
+
 }

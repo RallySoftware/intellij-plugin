@@ -11,13 +11,9 @@ class ApiResponseSpec extends Specification {
    "QueryResult":{
       "_rallyAPIMajor":"1",
       "_rallyAPIMinor":"40",
-      "Errors":[
-
-      ],
-      "Warnings":[
-
-      ],
-      "TotalResultCount":1,
+      "Errors":[ ],
+      "Warnings":[ ],
+      "TotalResultCount":2,
       "StartIndex":1,
       "PageSize":20,
       "Results":[
@@ -26,6 +22,13 @@ class ApiResponseSpec extends Specification {
             "_rallyAPIMinor":"40",
             "_ref":"https://rally1.rallydev.com/slm/webservice/1.40/workspace/41529001.js",
             "_refObjectName":"Rally",
+            "_type":"Workspace"
+         },
+         {
+            "_rallyAPIMajor":"1",
+            "_rallyAPIMinor":"40",
+            "_ref":"https://rally1.rallydev.com/slm/webservice/1.40/workspace/41529002.js",
+            "_refObjectName":"Rally2",
             "_type":"Workspace"
          }
       ]
@@ -64,4 +67,13 @@ class ApiResponseSpec extends Specification {
         response.results.get(0)._type.getAsString() == 'Workspace'
     }
 
+    def "Query meta-data is parsed correctly"() {
+        when:
+        ApiResponse response = new ApiResponse(workSpaceJson)
+
+        then:
+        response.count == 2
+        response.startIndex == 1
+        response.pageSize == 20
+    }
 }

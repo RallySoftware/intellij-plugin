@@ -52,11 +52,6 @@ class GenericDaoSpec extends BaseContainerSpec {
 
         and:
         requirements.size() == 3
-
-        and:
-        requirements[0].objectID == '14345'
-        requirements[1].objectID == '14389'
-        requirements[2].objectID == '14579'
     }
 
     def "find with query makes request and parses response"() {
@@ -81,11 +76,6 @@ class GenericDaoSpec extends BaseContainerSpec {
 
         and:
         requirements.size() == 3
-
-        and:
-        requirements[0].objectID == '14345'
-        requirements[1].objectID == '14389'
-        requirements[2].objectID == '14579'
     }
 
 }

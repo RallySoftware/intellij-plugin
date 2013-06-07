@@ -39,7 +39,7 @@ class RallyClient extends HttpClient {
         state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password))
 
         def method = new GetMethod(request.getEncodedUrl(server))
-        log.debug "Client requesting: ${method.URI}"
+        log.debug "Rally Client requesting [${method.URI}]"
         int code = executeMethod(method)
 
         switch (code) {

@@ -6,6 +6,8 @@ import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
 import com.rallydev.intellij.wsapi.QueryBuilder
 import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.ResultList
+import com.rallydev.intellij.wsapi.ResultListImpl
 import com.rallydev.intellij.wsapi.domain.DomainObject
 
 //todo: investigate IntelliJ's provided DI, move RallyClient to injected
@@ -24,15 +26,15 @@ class GenericDao<T extends DomainObject> {
         fromSingleResponse(RallyClient.getInstance().makeRequest(request))
     }
 
-    List<T> find(String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+    ResultList<T> find(String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
         find(null, order, pageSize)
     }
 
-    List<T> find(QueryBuilder query, int pageSize) {
+    ResultList<T> find(QueryBuilder query, int pageSize) {
         find(query, null, pageSize)
     }
 
-    List<T> find(QueryBuilder query = null, String order = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+    ResultList<T> find(QueryBuilder query = null, String order = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
         GetRequest request = new GetRequest(ApiEndpoint.DOMAIN_CLASS_ENDPOINTS[domainClass])
                 .withFetch()
                 .withPageSize(pageSize)
@@ -43,17 +45,8 @@ class GenericDao<T extends DomainObject> {
             request.withQuery(query.toString())
         }
 
-        return fromMultipleResponse(RallyClient.getInstance().makeRequest(request))
-    }
-
-    private List<T> fromMultipleResponse(ApiResponse response) {
-        List<T> results = []
-        response.results.each { JsonObject json ->
-            T domainObject = domainClass.newInstance()
-            domainObject.assignProperties(json)
-            results << domainObject
-        }
-        return results
+        ApiResponse response = RallyClient.getInstance().makeRequest(request)
+        return new ResultListImpl<T>(domainClass, request, response)
     }
 
     private T fromSingleResponse(ApiResponse response) {

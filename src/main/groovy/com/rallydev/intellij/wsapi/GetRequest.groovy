@@ -1,7 +1,9 @@
 package com.rallydev.intellij.wsapi
 
+import groovy.transform.AutoClone
 import org.apache.commons.httpclient.util.URIUtil
 
+@AutoClone
 class GetRequest {
     static final String WSAPI_VERSION = '1.39'
     static int MAX_PAGE_SIZE = 200
@@ -11,6 +13,7 @@ class GetRequest {
     String objectId
 
     Map<String, String> params = [:]
+    Integer startIndex = 1
 
     GetRequest(ApiEndpoint wsapiObject) {
         this.wsapiObject = wsapiObject
@@ -25,7 +28,8 @@ class GetRequest {
     }
 
     private String getQueryString() {
-        params ? '?' + params.collect { key, value -> "${key}=${value}" }.join('&') : ''
+        Map<String, String> fullParams = [start: startIndex] + params
+        '?' + fullParams.collect { key, value -> "${key}=${value}" }.join('&')
     }
 
     private String getEndPoint() {
@@ -39,6 +43,11 @@ class GetRequest {
 
     GetRequest withPageSize(Integer pageSize) {
         params['pagesize'] = between(pageSize, MIN_PAGE_SIZE, MAX_PAGE_SIZE)
+        return this
+    }
+
+    GetRequest withStartIndex(Integer startIndex) {
+        this.startIndex = startIndex
         return this
     }
 

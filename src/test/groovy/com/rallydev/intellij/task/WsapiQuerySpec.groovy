@@ -2,6 +2,7 @@ package com.rallydev.intellij.task
 
 import com.intellij.tasks.TaskType
 import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.ResultListMock
 import com.rallydev.intellij.wsapi.dao.GenericDao
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
@@ -18,10 +19,10 @@ class WsapiQuerySpec extends Specification {
 
         and:
         1 * query.defectDao.find(_, _) >> {
-            [new Defect(objectID: 'D1', _type: 'Defect')]
+            new ResultListMock([new Defect(objectID: 'D1', _type: 'Defect')])
         }
         1 * query.requirementDao.find(_, _) >> {
-            [new Requirement(objectID: 'R1', _type: 'HierarchicalRequirement')]
+            new ResultListMock([new Requirement(objectID: 'R1', _type: 'HierarchicalRequirement')])
         }
 
         when:

@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi.cache
 
+import com.intellij.openapi.components.ServiceManager
 import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.dao.GenericDao
 import com.rallydev.intellij.wsapi.domain.Project
@@ -18,13 +19,28 @@ class ProjectCacheService {
         projectDao = new GenericDao<Project>(Project.class)
     }
 
-    public List<Project> getCachedProjects() {
+    public static ProjectCacheService getInstance() {
+        return ServiceManager.getService(ProjectCacheService.class);
+    }
+
+    List<Project> getCachedProjects() {
         if (reload()) {
-            projectCache.projects = projectDao.find('Name')
-            projectCache.loaded = new Date()
-            projectCache.workspace = new Workspace(name: 'hello')
+            projectCache.with {
+                projects = projectDao.find('Name')
+                projects.loadAllPages()
+                loaded = new Date()
+                workspace = new Workspace(name: 'hello')
+            }
         }
         projectCache.projects
+    }
+
+    void clear() {
+        projectCache.with {
+            projects = null
+            loaded = null
+            workspace = null
+        }
     }
 
     private boolean reload() {

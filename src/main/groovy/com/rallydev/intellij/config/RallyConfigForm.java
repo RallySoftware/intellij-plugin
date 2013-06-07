@@ -18,6 +18,7 @@ public class RallyConfigForm implements SearchableConfigurable {
     private JTextField userName;
     private JPasswordField password;
     private JButton testConnectionButton;
+    private JButton invalidateCachesButton;
 
     private RallyConfig rallyConfig;
 
@@ -72,6 +73,7 @@ public class RallyConfigForm implements SearchableConfigurable {
         setupFromConfig();
 
         testConnectionButton.addActionListener(new TestConnectionButtonListener(this));
+        invalidateCachesButton.addActionListener(new InvalidateCachesActionListener());
 
         return configPanel;
     }
