@@ -23,6 +23,8 @@ class RequirementSpec extends Specification {
         requirement.description == '<p>Allow potential Rally customers to sign up for a trial that is easy to understand.</p>'
         requirement.name == 'lone story'
         requirement.lastUpdateDate == new Date((new Date(2012 - 1900, 10, 21, 8, 0, 0).getTime()) + 127) //deal with 127 milliseconds
+
+        requirement.project == 'http://localhost:7001/slm/webservice/1.39/project/11954.js'
     }
 
 }

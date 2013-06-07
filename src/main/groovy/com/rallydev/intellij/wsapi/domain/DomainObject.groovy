@@ -5,10 +5,13 @@ import com.intellij.openapi.diagnostic.Logger
 import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.ApiResponse
 
+import java.lang.reflect.Modifier
 import java.text.SimpleDateFormat
 
 abstract class DomainObject {
     private static final Logger log = Logger.getInstance(DomainObject)
+    protected static final List<String> EXCLUDED_PROPERTIES =
+        ['class', 'apiEndpoint', 'excludedProperties', 'raw']
 
     String objectID
     Date creationDate
@@ -17,11 +20,15 @@ abstract class DomainObject {
     //todo: remove? Needed?
     JsonObject raw
 
+    List<String> getExcludedProperties() {
+        EXCLUDED_PROPERTIES
+    }
+
     void assignProperties(JsonObject raw) {
         this.raw = raw
 
         List<MetaProperty> assignableProperties = metaClass.properties.findAll {
-            !['class', 'apiEndpoint'].contains(it.name)
+            !excludedProperties.contains(it.name) && !Modifier.isStatic(it.modifiers)
         }
 
         assignableProperties.each { MetaProperty property ->

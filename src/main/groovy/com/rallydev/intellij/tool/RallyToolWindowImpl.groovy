@@ -66,7 +66,7 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
                         window: this, tableModel: (DefaultTableModel) resultsTable.getModel()
                 )
         )
-        //?. for test - explore IntelliJ test framework to better handle
+        // ?. for test - explore IntelliJ test framework to better handle
         searchPane.rootPane?.setDefaultButton(searchButton)
     }
 
@@ -121,11 +121,10 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
 
         void run() {
             tableModel.rowCount = 0
-            results.each {
-                Artifact result ->
-                    tableModel.addRow(
-                            [result.formattedID, result.name, result.description, result._type].toArray()
-                    )
+            results.each { Artifact result ->
+                tableModel.addRow(
+                        [result.formattedID, result.name, result.description, result._type].toArray()
+                )
             }
         }
     }
