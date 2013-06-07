@@ -1,30 +1,31 @@
 package com.rallydev.intellij.wsapi
 
+import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.SpecUtils
-import spock.lang.Specification
 
-class ConnectionTestSpec extends Specification {
+class ConnectionTestSpec extends BaseContainerSpec {
 
     def "Ensure doTest tries to make connection"() {
         given:
         RallyClient rallyClient = Mock(RallyClient)
-        1 * rallyClient.makeRequest(_) >> { new ApiResponse(SpecUtils.minimalResponseJson) }
-        ConnectionTest connectionTest = new ConnectionTest(rallyClient)
+        registerComponentInstance(RallyClient.name, rallyClient)
 
         when:
-        connectionTest.doTest()
+        new ConnectionTest().doTest()
 
         then:
-        true
+        1 * rallyClient.makeRequest(_) >> { new ApiResponse(SpecUtils.minimalResponseJson) }
     }
 
     def "Ensure exception when no response results"() {
-        RallyClient rallyClient = Mock(RallyClient)
-        1 * rallyClient.makeRequest(_) >> { null }
-        ConnectionTest connectionTest = new ConnectionTest(rallyClient)
+        given:
+        RallyClient rallyClient = Mock(RallyClient) {
+            1 * makeRequest(_) >> { null }
+        }
+        registerComponentInstance(RallyClient.name, rallyClient)
 
         when:
-        connectionTest.doTest()
+        new ConnectionTest().doTest()
 
         then:
         thrown(Exception)

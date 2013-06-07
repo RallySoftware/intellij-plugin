@@ -1,13 +1,13 @@
 package com.rallydev.intellij.wsapi.dao
 
+import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
 import com.rallydev.intellij.wsapi.QueryBuilder
 import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.domain.Requirement
-import spock.lang.Specification
 
-class GenericDaoSpec extends Specification {
+class GenericDaoSpec extends BaseContainerSpec {
 
     def "findById makes request and parses response"() {
         given:
@@ -15,9 +15,10 @@ class GenericDaoSpec extends Specification {
         rallyClient.makeRequest(_ as GetRequest) >> {
             new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('single_requirement.json').text)
         }
+        registerComponentInstance(RallyClient.name, rallyClient)
 
         when:
-        GenericDao requirementDao = new GenericDao<Requirement>(rallyClient, Requirement)
+        GenericDao requirementDao = new GenericDao<Requirement>(Requirement)
         Requirement requirement = requirementDao.findById('14345')
 
         then:
@@ -31,9 +32,10 @@ class GenericDaoSpec extends Specification {
             madeRequest = request
             new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
         }
+        registerComponentInstance(RallyClient.name, rallyClient)
 
         when:
-        GenericDao requirementDao = new GenericDao<Requirement>(rallyClient, Requirement)
+        GenericDao requirementDao = new GenericDao<Requirement>(Requirement)
         List<Requirement> requirements = requirementDao.find()
 
         then:
@@ -56,12 +58,13 @@ class GenericDaoSpec extends Specification {
             madeRequest = request
             new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
         }
+        registerComponentInstance(RallyClient.name, rallyClient)
 
         QueryBuilder queryBuilder = new QueryBuilder()
         queryBuilder.withKeyword("hello")
 
         when:
-        GenericDao requirementDao = new GenericDao<Requirement>(rallyClient, Requirement)
+        GenericDao requirementDao = new GenericDao<Requirement>(Requirement)
         List<Requirement> requirements = requirementDao.find(queryBuilder)
 
         then:

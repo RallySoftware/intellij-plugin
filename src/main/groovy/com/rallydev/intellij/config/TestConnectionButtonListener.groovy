@@ -21,7 +21,7 @@ class TestConnectionButtonListener implements ActionListener {
     public void actionPerformed(ActionEvent actionEvent) {
         String error = null
         try {
-            new ConnectionTest(form.getClient()).doTest()
+            new ConnectionTest().doTest()
         } catch (Exception e) {
             error = messageFromException(e)
         }

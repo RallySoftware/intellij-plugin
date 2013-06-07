@@ -1,11 +1,9 @@
 package com.rallydev.intellij.task
 
-import spock.lang.Shared
 import spock.lang.Specification
 
 class RallyRepositoryTypeSpec extends Specification {
 
-    @Shared
     RallyRepositoryType repositoryType
 
     def setup() {

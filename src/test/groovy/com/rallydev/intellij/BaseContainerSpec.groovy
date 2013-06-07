@@ -13,23 +13,18 @@ import com.rallydev.intellij.wsapi.cache.ProjectCache
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Project
 import org.picocontainer.MutablePicoContainer
-import spock.lang.Shared
 import spock.lang.Specification
 
 abstract class BaseContainerSpec extends Specification {
 
     static String server = 'http://asdf'
 
-    @Shared
     MutablePicoContainer picoContainer
 
-    @Shared
     RallyConfig config
-    @Shared
     RallyClient recordingClient
     List<String> recordingClientRequests = []
 
-    @Shared
     List<Project> projects = [new Project(name: 'Project1'), new Project(name: 'Project1')]
 
     def setup() {

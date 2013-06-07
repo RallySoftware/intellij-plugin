@@ -22,9 +22,9 @@ class WsapiQuery {
 
     public WsapiQuery(RallyClient client) {
         this.client = client
-        artifactDao = new GenericDao<Artifact>(client, Artifact)
-        defectDao = new GenericDao<Defect>(client, Defect)
-        requirementDao = new GenericDao<Requirement>(client, Requirement)
+        artifactDao = new GenericDao<Artifact>(Artifact)
+        defectDao = new GenericDao<Defect>(Defect)
+        requirementDao = new GenericDao<Requirement>(Requirement)
     }
 
     Collection<RallyTask> findTasks(String keyword, int max, long since) {

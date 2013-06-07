@@ -13,8 +13,8 @@ class WsapiQuerySpec extends Specification {
     def "findTasks returns list of tasks from requirements and defects"() {
         given:
         WsapiQuery query = new WsapiQuery(Mock(RallyClient))
-        query.defectDao = Mock(GenericDao, constructorArgs: [Mock(RallyClient), Defect])
-        query.requirementDao = Mock(GenericDao, constructorArgs: [Mock(RallyClient), Defect])
+        query.defectDao = Mock(GenericDao, constructorArgs: [Defect])
+        query.requirementDao = Mock(GenericDao, constructorArgs: [Defect])
 
         and:
         1 * query.defectDao.find(_, _) >> {
@@ -42,7 +42,7 @@ class WsapiQuerySpec extends Specification {
     def "findTasks returns single task from artifact"() {
         given:
         WsapiQuery query = new WsapiQuery(Mock(RallyClient))
-        query.artifactDao = Mock(GenericDao, constructorArgs: [Mock(RallyClient), Artifact])
+        query.artifactDao = Mock(GenericDao, constructorArgs: [Artifact])
 
         and:
         1 * query.artifactDao.findById(_) >> {

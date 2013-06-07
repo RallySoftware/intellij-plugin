@@ -1,10 +1,11 @@
 package com.rallydev.intellij.wsapi
 
+import com.rallydev.intellij.wsapi.domain.Artifact
+import com.rallydev.intellij.wsapi.domain.Requirement
 import spock.lang.Specification
 
 import static com.rallydev.intellij.wsapi.ApiEndpoint.ARTIFACT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
-import static com.rallydev.intellij.wsapi.ApiEndpoint.TYPE_DEFINITION
 
 class ApiEndpointSpec extends Specification {
 
@@ -16,7 +17,6 @@ class ApiEndpointSpec extends Specification {
         endpoint                 | expectedValue
         ARTIFACT                 | 'artifact'
         HIERARCHICAL_REQUIREMENT | 'hierarchicalrequirement'
-        TYPE_DEFINITION          | 'typedefinition'
     }
 
     def "json root returns camelCase"() {
@@ -27,7 +27,16 @@ class ApiEndpointSpec extends Specification {
         endpoint                 | expectedValue
         ARTIFACT                 | 'Artifact'
         HIERARCHICAL_REQUIREMENT | 'HierarchicalRequirement'
-        TYPE_DEFINITION          | 'TypeDefinition'
+    }
+
+    def "endpoints map returns endpoint from class"() {
+        expect:
+        ApiEndpoint.DOMAIN_CLASS_ENDPOINTS[cls] == expectedValue
+
+        where:
+        cls         | expectedValue
+        Artifact    | ARTIFACT
+        Requirement | HIERARCHICAL_REQUIREMENT
     }
 
 }

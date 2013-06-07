@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi
 
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.rallydev.intellij.config.RallyConfig
 import org.apache.commons.httpclient.HttpClient
@@ -16,14 +17,6 @@ class RallyClient extends HttpClient {
     String username
     String password
 
-    static RallyClient fromConfig() {
-        return new RallyClient(
-                new URL(RallyConfig.getInstance().url),
-                RallyConfig.getInstance().userName,
-                RallyConfig.getInstance().password
-        );
-    }
-
     RallyClient() {}
 
     RallyClient(URL server, String username, String password) {
@@ -36,6 +29,10 @@ class RallyClient extends HttpClient {
         this.server = new URL(rallyConfig.url)
         this.username = rallyConfig.userName
         this.password = rallyConfig.password
+    }
+
+    public static RallyClient getInstance() {
+        return ServiceManager.getService(RallyClient.class);
     }
 
     ApiResponse makeRequest(GetRequest request) {

@@ -8,7 +8,6 @@ import static com.rallydev.intellij.wsapi.QueryBuilder.Operator.contains
 //todo: I don't like this class, refactor into some other way
 class Search {
     String term
-    RallyClient rallyClient
     List<String> searchAttributes = []
     Class domainClass
 
@@ -18,7 +17,7 @@ class Search {
             queryBuilder.withDisjunction(attribute, contains, term)
         }
 
-        GenericDao<Artifact> dao = new GenericDao<>(rallyClient, domainClass)
+        GenericDao<Artifact> dao = new GenericDao<>(domainClass)
         dao.find(queryBuilder, pageSize)
     }
 

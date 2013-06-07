@@ -23,14 +23,4 @@ class RallyRepositorySpec extends BaseContainerSpec {
         clonedRepository.workspaceId == workdspaceId
     }
 
-    def "Get client returns correctly configured RallyClient"() {
-        given:
-        RallyRepository repository = new RallyRepository()
-
-        expect:
-        repository.client.username == config.userName
-        repository.client.password == config.password
-        repository.client.server as String == config.url
-    }
-
 }

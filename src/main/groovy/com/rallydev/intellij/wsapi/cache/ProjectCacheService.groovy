@@ -15,7 +15,7 @@ class ProjectCacheService {
         this.rallyClient = rallyClient
         this.projectCache = projectCache
 
-        projectDao = new GenericDao<Project>(rallyClient, Project.class)
+        projectDao = new GenericDao<Project>(Project.class)
     }
 
     public List<Project> getCachedProjects() {

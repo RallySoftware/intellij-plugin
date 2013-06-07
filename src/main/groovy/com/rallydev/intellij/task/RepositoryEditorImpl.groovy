@@ -43,7 +43,7 @@ class RepositoryEditorImpl extends RepositoryEditor {
     private void loadRallyWorkspaces(RallyRepository repository) {
         try {
             workspaces.addItem(new Workspace(name: 'Select Workspace', objectID: '-1'))
-            new GenericDao<Workspace>(repository.client, Workspace).find().each {
+            new GenericDao<Workspace>(Workspace).find().each {
                 workspaces.addItem(it)
             }
         } catch (Exception e) {

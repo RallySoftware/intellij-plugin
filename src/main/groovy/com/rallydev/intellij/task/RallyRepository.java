@@ -1,5 +1,6 @@
 package com.rallydev.intellij.task;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.tasks.Task;
 import com.intellij.tasks.impl.BaseRepository;
@@ -11,7 +12,6 @@ import com.rallydev.intellij.wsapi.RallyClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 
 @Tag("Rally")
@@ -56,11 +56,11 @@ public class RallyRepository extends BaseRepositoryImpl {
     @Override
     @SuppressWarnings("deprecation")
     public void testConnection() throws Exception {
-        new ConnectionTest(getClient()).doTest();
+        new ConnectionTest().doTest();
     }
 
     public RallyClient getClient() throws MalformedURLException {
-        return RallyClient.fromConfig();
+        return ServiceManager.getService(RallyClient.class);
     }
 
     //Url is used in the server list, overriding to return a display name instead.

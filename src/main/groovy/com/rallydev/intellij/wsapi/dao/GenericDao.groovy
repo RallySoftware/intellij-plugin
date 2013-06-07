@@ -11,11 +11,9 @@ import com.rallydev.intellij.wsapi.domain.DomainObject
 //todo: investigate IntelliJ's provided DI, move RallyClient to injected
 
 class GenericDao<T extends DomainObject> {
-    RallyClient client
     Class<T> domainClass
 
-    GenericDao(RallyClient client, Class domainClass) {
-        this.client = client
+    GenericDao(Class<T> domainClass) {
         this.domainClass = domainClass
     }
 
@@ -23,15 +21,11 @@ class GenericDao<T extends DomainObject> {
         GetRequest request = new GetRequest(ApiEndpoint.ARTIFACT)
                 .withFetch()
                 .withObjectId(id)
-        fromSingleResponse(client.makeRequest(request))
+        fromSingleResponse(RallyClient.getInstance().makeRequest(request))
     }
 
     List<T> find(QueryBuilder query = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
-        //todo: look up by class or something rather than instantiating
-
-        T domainObject = domainClass.newInstance()
-
-        GetRequest request = new GetRequest(domainObject.apiEndpoint)
+        GetRequest request = new GetRequest(ApiEndpoint.DOMAIN_CLASS_ENDPOINTS[domainClass])
                 .withFetch()
                 .withPageSize(pageSize)
 
@@ -39,7 +33,7 @@ class GenericDao<T extends DomainObject> {
             request.withQuery(query.toString())
         }
 
-        return fromMultipleResponse(client.makeRequest(request))
+        return fromMultipleResponse(RallyClient.getInstance().makeRequest(request))
     }
 
     private List<T> fromMultipleResponse(ApiResponse response) {
@@ -47,7 +41,7 @@ class GenericDao<T extends DomainObject> {
         response.results.each { JsonObject json ->
             T domainObject = domainClass.newInstance()
             domainObject.assignProperties(json)
-            results <<  domainObject
+            results << domainObject
         }
         return results
     }

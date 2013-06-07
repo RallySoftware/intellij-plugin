@@ -5,7 +5,6 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
-import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
@@ -113,7 +112,6 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
 
         void doActionPerformed() {
             search.term = window.searchTerm
-            search.rallyClient = RallyClient.fromConfig()
             search.searchAttributes = window.searchAttributes
             search.domainClass = window.selectedType
 
