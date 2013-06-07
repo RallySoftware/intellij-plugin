@@ -20,7 +20,7 @@ class ProjectCacheService {
 
     public List<Project> getCachedProjects() {
         if (reload()) {
-            projectCache.projects = projectDao.find()
+            projectCache.projects = projectDao.find('Name')
             projectCache.loaded = new Date()
             projectCache.workspace = new Workspace(name: 'hello')
         }

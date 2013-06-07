@@ -56,6 +56,11 @@ class GetRequest {
         return this
     }
 
+    GetRequest withOrder(String order) {
+        params['order'] = order
+        return this
+    }
+
     private baseUrl(URL server) {
         return "${server}/slm/webservice/${WSAPI_VERSION}"
     }

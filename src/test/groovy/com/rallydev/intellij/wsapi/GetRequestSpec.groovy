@@ -87,4 +87,16 @@ class GetRequestSpec extends Specification {
         wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js?pagesize=${GetRequest.MAX_PAGE_SIZE}"
     }
 
+    def "With order"() {
+        given:
+        String rallyUri = 'https://rally1.rallydev.com/'
+        GetRequest wsapiRequest
+
+        when:
+        wsapiRequest = new GetRequest(ApiEndpoint.WORKSPACE).withOrder('Name')
+
+        then:
+        wsapiRequest.getUrl(rallyUri.toURL()) == "${rallyUri}/slm/webservice/${GetRequest.WSAPI_VERSION}/workspace.js?order=Name"
+    }
+
 }

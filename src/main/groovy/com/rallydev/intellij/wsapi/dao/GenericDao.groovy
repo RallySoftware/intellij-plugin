@@ -24,11 +24,21 @@ class GenericDao<T extends DomainObject> {
         fromSingleResponse(RallyClient.getInstance().makeRequest(request))
     }
 
-    List<T> find(QueryBuilder query = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+    List<T> find(String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+        find(null, order, pageSize)
+    }
+
+    List<T> find(QueryBuilder query, int pageSize) {
+        find(query, null, pageSize)
+    }
+
+    List<T> find(QueryBuilder query = null, String order = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
         GetRequest request = new GetRequest(ApiEndpoint.DOMAIN_CLASS_ENDPOINTS[domainClass])
                 .withFetch()
                 .withPageSize(pageSize)
-
+        if (order) {
+            request.withOrder(order)
+        }
         if (query?.hasConditions()) {
             request.withQuery(query.toString())
         }

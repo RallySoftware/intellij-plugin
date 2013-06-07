@@ -25,6 +25,15 @@ class GenericDaoSpec extends BaseContainerSpec {
         requirement.objectID == '14345'
     }
 
+    def "order query param used in request included when order supplied"() {
+        when:
+        new GenericDao<Requirement>(Requirement).find('Name')
+
+        then:
+        recordingClientRequests
+        recordingClientRequests[0].contains('order=')
+    }
+
     def "find with NO query makes request and parses response"() {
         RallyClient rallyClient = Mock(RallyClient)
         GetRequest madeRequest = null

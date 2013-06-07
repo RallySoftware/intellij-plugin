@@ -25,7 +25,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
         List<Project> wsapiProjects = [new Project(name: 'Project 1'), new Project(name: 'Project 2')]
         cache.projectDao = Mock(GenericDao, constructorArgs: [Project]) {
-            1 * find() >> { wsapiProjects }
+            1 * find(_ as String) >> { wsapiProjects }
         }
 
         when:
@@ -49,7 +49,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         cache.cachedProjects
 
         then:
-        1 * cache.projectDao.find() >> { [] }
+        1 * cache.projectDao.find('Name') >> { [] }
     }
 
     def "cached value expires after a day"() {
@@ -63,7 +63,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         cache.cachedProjects
 
         then:
-        1 * cache.projectDao.find() >> { [] }
+        1 * cache.projectDao.find('Name') >> { [] }
 
         when:
         cache.projectCache.loaded = new Date() - 1
@@ -72,7 +72,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         cache.cachedProjects
 
         then:
-        1 * cache.projectDao.find() >> { [] }
+        1 * cache.projectDao.find('Name') >> { [] }
     }
 
 }
