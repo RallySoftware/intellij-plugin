@@ -13,9 +13,13 @@ import com.rallydev.intellij.wsapi.domain.Requirement
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 
 //todo: store checkbox state
 class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
+
+    Map<String, Artifact> searchResults
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
         myToolWindow = toolWindow
@@ -58,6 +62,15 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
             }
         }
         resultsTable.model = model
+
+        resultsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            void mouseClicked(MouseEvent mouseEvent) {
+                if(mouseEvent.clickCount == 2) {
+                    println searchResults[(String)resultsTable.getValueAt(resultsTable.selectedRow, 0)]
+                }
+            }
+        })
 
         model.addColumn('Formatted ID')
         model.addColumn('Name')

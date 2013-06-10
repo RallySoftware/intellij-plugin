@@ -58,7 +58,7 @@ abstract class DomainObject {
 
     @Override
     String toString() {
-        "${getClass().simpleName} [objectID]"
+        "${getClass().simpleName} [${objectID}]"
     }
 
     abstract ApiEndpoint getApiEndpoint();

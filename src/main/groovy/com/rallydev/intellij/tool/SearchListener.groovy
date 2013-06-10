@@ -33,7 +33,9 @@ class SearchListener implements ActionListener, Runnable {
 
     void run() {
         tableModel.rowCount = 0
+        window.searchResults = new HashMap<>()
         results.each { Artifact result ->
+            window.searchResults[result.formattedID] = result
             tableModel.addRow(
                     [result.formattedID, result.name, result.description, result._type, result.projectName].toArray()
             )
