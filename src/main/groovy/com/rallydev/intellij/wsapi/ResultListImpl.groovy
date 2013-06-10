@@ -5,8 +5,6 @@ import com.rallydev.intellij.wsapi.domain.DomainObject
 
 class ResultListImpl<T extends DomainObject> extends ArrayList<T> implements ResultList<T> {
 
-    static int MAX_PAGES_TO_LOAD = 3
-
     Class<T> domainClass
     Integer totalSize
     Integer nextStartIndex

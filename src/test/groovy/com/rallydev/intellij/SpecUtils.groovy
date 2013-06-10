@@ -21,8 +21,4 @@ class SpecUtils {
 }
 '''
 
-    static ApiResponse getMinimalResponse() {
-        new ApiResponse(minimalResponseJson)
-    }
-
 }

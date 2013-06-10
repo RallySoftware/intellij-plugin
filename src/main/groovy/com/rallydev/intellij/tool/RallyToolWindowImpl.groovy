@@ -5,7 +5,6 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
-import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
@@ -14,8 +13,6 @@ import com.rallydev.intellij.wsapi.domain.Requirement
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 
 //todo: store checkbox state
 class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
@@ -54,12 +51,19 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
     }
 
     void setupTable() {
-        DefaultTableModel tableModel = (DefaultTableModel) resultsTable.getModel()
-        tableModel.addColumn('Formatted ID')
-        tableModel.addColumn('Name')
-        tableModel.addColumn('Description')
-        tableModel.addColumn('Type')
-        tableModel.addColumn('Project')
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            boolean isCellEditable(int row, int column) {
+                false
+            }
+        }
+        resultsTable.model = model
+
+        model.addColumn('Formatted ID')
+        model.addColumn('Name')
+        model.addColumn('Description')
+        model.addColumn('Type')
+        model.addColumn('Project')
     }
 
     void installSearchListener() {
@@ -103,39 +107,6 @@ class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
 
     String getSelectedProject() {
         projectChoices.getSelectedItem()?.project?._ref
-    }
-
-    static class SearchListener implements ActionListener, Runnable {
-        DefaultTableModel tableModel
-        List<Artifact> results
-        RallyToolWindowImpl window
-        Search search = new Search()
-
-        @Override
-        void actionPerformed(ActionEvent actionEvent) {
-            Thread.start { doActionPerformed() }
-        }
-
-        void doActionPerformed() {
-            search.with {
-                term = window.searchTerm
-                searchAttributes = window.searchAttributes
-                domainClass = window.selectedType
-                project = window.selectedProject
-            }
-
-            results = search.doSearch()
-            SwingUtilities.invokeLater(this)
-        }
-
-        void run() {
-            tableModel.rowCount = 0
-            results.each { Artifact result ->
-                tableModel.addRow(
-                        [result.formattedID, result.name, result.description, result._type, result.projectName].toArray()
-                )
-            }
-        }
     }
 
     static class ProjectItem {
