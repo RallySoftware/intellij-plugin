@@ -1,10 +1,12 @@
 package com.rallydev.intellij.wsapi
 
 import com.rallydev.intellij.wsapi.domain.Artifact
+import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Requirement
 import spock.lang.Specification
 
 import static com.rallydev.intellij.wsapi.ApiEndpoint.ARTIFACT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.DEFECT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
 
 class ApiEndpointSpec extends Specification {
@@ -37,6 +39,16 @@ class ApiEndpointSpec extends Specification {
         cls         | expectedValue
         Artifact    | ARTIFACT
         Requirement | HIERARCHICAL_REQUIREMENT
+    }
+
+    def "fromType returns proper endpoint"() {
+        expect:
+        ApiEndpoint.fromType(type) == expectedValue
+
+        where:
+        type              | expectedValue
+        Defect.TYPE      | DEFECT
+        Requirement.TYPE | HIERARCHICAL_REQUIREMENT
     }
 
 }

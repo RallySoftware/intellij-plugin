@@ -23,6 +23,12 @@ public enum ApiEndpoint {
         DOMAIN_CLASS_ENDPOINTS.put(Workspace.class, WORKSPACE);
     }
 
+    public static ApiEndpoint fromType(String type) {
+        if (Defect.getTYPE().equals(type)) return DEFECT;
+        if (Requirement.getTYPE().equals(type)) return HIERARCHICAL_REQUIREMENT;
+        return null;
+    }
+
     @Override
     public String toString() {
         return super.toString().replaceAll("_", "").toLowerCase();

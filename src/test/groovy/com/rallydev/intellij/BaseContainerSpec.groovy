@@ -18,8 +18,6 @@ import spock.lang.Specification
 
 abstract class BaseContainerSpec extends Specification {
 
-    static String server = 'http://asdf'
-
     MutablePicoContainer picoContainer
 
     RallyConfig config
@@ -37,7 +35,7 @@ abstract class BaseContainerSpec extends Specification {
 
         recordingClient = Mock(RallyClient)
         recordingClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
-            recordingClientRequests << request.getUrl(server.toURL())
+            recordingClientRequests << request.getUrl(config.url.toURL())
             return new ApiResponse(SpecUtils.minimalResponseJson)
         }
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)

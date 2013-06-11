@@ -14,6 +14,9 @@ public class ArtifactTab {
     protected JTextPane description;
     protected JTextPane notes;
 
+    protected JButton viewInRallyButton;
+    protected JPanel buttonPanel;
+
     protected ArtifactTab() { }
 
     private void createUIComponents() {
