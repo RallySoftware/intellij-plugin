@@ -147,4 +147,19 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.searchAttributes == ['FormattedID', 'Name', 'Description']
     }
 
+    def "enable controls correctly changes state"() {
+        when:
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.enableControls(true)
+
+        then:
+        searchWindow.searchButton.enabled
+
+        when:
+        searchWindow.enableControls(false)
+
+        then:
+        !searchWindow.searchButton.enabled
+    }
+
 }

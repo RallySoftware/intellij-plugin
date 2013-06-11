@@ -40,6 +40,9 @@
         <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
                             serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts" />
 
+        <applicationService serviceInterface="com.rallydev.intellij.util.SwingService"
+                            serviceImplementation="com.rallydev.intellij.util.SwingService" />
+
         <toolWindow id="Rally Search" icon="/rally13.png" anchor="bottom" factoryClass="com.rallydev.intellij.tool.SearchWindowImpl" />
         <toolWindow id="Rally Artifacts" icon="/rally13.png" anchor="right" canCloseContents="true" factoryClass="com.rallydev.intellij.tool.ArtifactWindowImpl" />
 

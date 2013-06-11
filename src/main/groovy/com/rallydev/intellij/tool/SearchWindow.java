@@ -18,5 +18,6 @@ public class SearchWindow {
     protected JButton searchButton;
 
     protected JTable resultsTable;
+    protected JLabel status;
 
 }

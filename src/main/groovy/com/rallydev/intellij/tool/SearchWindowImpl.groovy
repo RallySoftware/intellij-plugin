@@ -6,6 +6,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
+import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
@@ -13,6 +14,7 @@ import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.Requirement
 
 import javax.swing.*
+import javax.swing.border.EmptyBorder
 import javax.swing.table.DefaultTableModel
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -24,6 +26,8 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     Map<String, Artifact> searchResults = new HashMap<>()
     com.intellij.openapi.project.Project project
 
+    volatile Boolean showLoadingAnimation
+
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
         this.project = project
         myToolWindow = toolWindow
@@ -33,6 +37,9 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void setupWindow() {
+        status.text = ''
+        status.border = new EmptyBorder(0, 10, 10, 0)
+
         setupTypeChoices()
         setupProjectChoices()
         setupTable()
@@ -40,7 +47,6 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void setupTypeChoices() {
-        //todo: future - dynamically setup choices from typedefs
         typeChoices.setModel(new DefaultComboBoxModel(
                 ['', 'Defect', 'Requirement'].toArray()
         ))
@@ -100,6 +106,41 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         ((DefaultTableModel) resultsTable.model).addRow(
                 [result.formattedID, result.name, result.formattedLastUpdateDate, result._type, result.projectName].toArray()
         )
+    }
+
+    void enableControls(Boolean enabled) {
+        SwingService.instance.doInUiThread {
+            [searchBox, typeChoices, projectChoices, formattedIDCheckBox, nameCheckBox,
+                    descriptionCheckBox, searchButton].each { control ->
+                control.enabled = enabled
+            }
+        }
+    }
+
+    void setStatus(String statusText, boolean haltLoadingAnimation = true) {
+        if(haltLoadingAnimation) {
+            showLoadingAnimation = false
+        }
+        SwingService.instance.doInUiThread {
+            status.text = statusText
+        }
+    }
+
+    void startLoadingAnimation() {
+        setStatus('Loading', false)
+        showLoadingAnimation = true
+        Thread.start {
+            while (showLoadingAnimation) {
+                Thread.sleep(250)
+                if (showLoadingAnimation) {
+                    if(status.text.endsWith('......')) {
+                        setStatus('Loading.', false)
+                    } else {
+                        setStatus(status.text + '.', false)
+                    }
+                }
+            }
+        }
     }
 
     Class getSelectedType() {

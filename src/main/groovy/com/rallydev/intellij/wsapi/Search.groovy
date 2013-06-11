@@ -26,7 +26,7 @@ class Search {
         }
 
         GenericDao<Artifact> dao = new GenericDao<>(domainClass)
-        dao.find(queryBuilder, pageSize)
+        dao.find(queryBuilder, 'LastUpdateDate&dir=DESC', pageSize)
     }
 
 }

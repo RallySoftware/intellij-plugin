@@ -7,6 +7,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.testFramework.UsefulTestCase
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.tool.OpenArtifacts
+import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
 import com.rallydev.intellij.wsapi.RallyClient
@@ -42,6 +43,12 @@ abstract class BaseContainerSpec extends Specification {
 
         registerComponentInstance(new ProjectCache(loaded: new Date(), projects: projects))
         registerComponentImplementation(ProjectCacheService)
+
+        SwingService swingService = new SwingService()
+        swingService.metaClass.doInUiThread = { Closure change ->
+            change()
+        }
+        registerComponentInstance(swingService)
 
         registerComponentImplementation(OpenArtifacts)
     }

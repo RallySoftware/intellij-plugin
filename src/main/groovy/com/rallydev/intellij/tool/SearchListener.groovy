@@ -3,7 +3,7 @@ package com.rallydev.intellij.tool
 import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.domain.Artifact
 
-import javax.swing.SwingUtilities
+import javax.swing.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
@@ -25,7 +25,17 @@ class SearchListener implements ActionListener, Runnable {
             project = window.selectedProject
         }
 
-        results = search.doSearch()
+        window.startLoadingAnimation()
+        window.enableControls(false)
+        try {
+            results = search.doSearch()
+            window.setStatus("Loaded ${results.size()} artifacts")
+        } catch (Exception e) {
+            window.setStatus('Error communicating with Rally')
+        } finally {
+            window.enableControls(true)
+        }
+
         SwingUtilities.invokeLater(this)
     }
 
@@ -35,4 +45,5 @@ class SearchListener implements ActionListener, Runnable {
             window.addResult(it)
         }
     }
+
 }
