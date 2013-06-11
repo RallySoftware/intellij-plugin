@@ -17,7 +17,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
 //todo: store checkbox state
-class SearchWindowImpl extends RallyToolWindow implements ToolWindowFactory {
+class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     ToolWindow myToolWindow
     Map<String, Artifact> searchResults
@@ -68,14 +68,16 @@ class SearchWindowImpl extends RallyToolWindow implements ToolWindowFactory {
             @Override
             void mouseClicked(MouseEvent mouseEvent) {
                 if(mouseEvent.clickCount == 2) {
-                    println searchResults[(String)resultsTable.getValueAt(resultsTable.selectedRow, 0)]
+                    Artifact artifact = searchResults[(String)resultsTable.getValueAt(resultsTable.selectedRow, 0)]
+
+                    ServiceManager.getService(OpenArtifacts.class) << artifact
                 }
             }
         })
 
         model.addColumn('Formatted ID')
         model.addColumn('Name')
-        model.addColumn('Description')
+        model.addColumn('Last Updated')
         model.addColumn('Type')
         model.addColumn('Project')
     }

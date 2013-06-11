@@ -12,7 +12,7 @@ class SearchListenerSpec extends Specification {
 
     def "performs search based on window selections"() {
         given:
-        RallyToolWindowImpl window = Mock(RallyToolWindowImpl) {
+        SearchWindowImpl window = Mock(SearchWindowImpl) {
             1 * getSearchAttributes() >> { ['TestAttribute'] }
             1 * getSelectedType() >> { Defect }
             1 * getSearchTerm() >> { 'The search' }
@@ -38,7 +38,7 @@ class SearchListenerSpec extends Specification {
         DefaultTableModel tableModel = Mock(DefaultTableModel)
 
         Map<String, Artifact> searchResults = new HashMap<>()
-        RallyToolWindowImpl window = Mock(RallyToolWindowImpl)
+        SearchWindowImpl window = Mock(SearchWindowImpl)
         window.searchResults >> searchResults
 
         and:
@@ -63,7 +63,7 @@ class SearchListenerSpec extends Specification {
         DefaultTableModel tableModel = Mock(DefaultTableModel)
 
         Map<String, Artifact> searchResults = new HashMap<>()
-        RallyToolWindowImpl window = Mock(RallyToolWindowImpl)
+        SearchWindowImpl window = Mock(SearchWindowImpl)
         window.searchResults >> searchResults
 
         and:

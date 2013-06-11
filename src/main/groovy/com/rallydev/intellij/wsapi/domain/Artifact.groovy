@@ -3,12 +3,15 @@ package com.rallydev.intellij.wsapi.domain
 import com.google.gson.JsonObject
 import com.rallydev.intellij.wsapi.ApiEndpoint
 
+import java.text.DateFormat
+
 class Artifact extends DomainObject {
 
-    String description
     String formattedID
     String name
     Date lastUpdateDate
+    String description
+    String notes
     String _type
 
     String project
@@ -29,6 +32,13 @@ class Artifact extends DomainObject {
         super.assignProperties(raw)
         project = raw['Project']?.'_ref'?.value
         projectName = raw['Project']?.'_refObjectName'?.value
+    }
+
+    String getFormattedLastUpdateDate() {
+        if (lastUpdateDate) {
+            return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(lastUpdateDate)
+        }
+        return ''
     }
 
 }

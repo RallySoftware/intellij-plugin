@@ -37,7 +37,11 @@
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCacheService"
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCacheService" />
 
-        <toolWindow id="Rally" icon="/rally13.png" anchor="bottom" secondary="true" factoryClass="com.rallydev.intellij.tool.RallyToolWindowImpl" />
+        <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
+                            serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts" />
+
+        <toolWindow id="Rally Search" icon="/rally13.png" anchor="bottom" factoryClass="com.rallydev.intellij.tool.SearchWindowImpl" />
+        <toolWindow id="Rally Artifacts" icon="/rally13.png" anchor="right" canCloseContents="true" factoryClass="com.rallydev.intellij.tool.ArtifactWindowImpl" />
 
         <tasks.repositoryType implementation="com.rallydev.intellij.task.RallyRepositoryType"/>
 

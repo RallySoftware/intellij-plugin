@@ -11,7 +11,7 @@ import java.awt.event.ActionListener
 class SearchListener implements ActionListener, Runnable {
     DefaultTableModel tableModel
     List<Artifact> results
-    RallyToolWindowImpl window
+    SearchWindowImpl window
     Search search = new Search()
 
     @Override
@@ -37,7 +37,7 @@ class SearchListener implements ActionListener, Runnable {
         results.each { Artifact result ->
             window.searchResults[result.formattedID] = result
             tableModel.addRow(
-                    [result.formattedID, result.name, result.description, result._type, result.projectName].toArray()
+                    [result.formattedID, result.name, result.formattedLastUpdateDate, result._type, result.projectName].toArray()
             )
         }
     }
