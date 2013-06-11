@@ -10,6 +10,7 @@ import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Requirement
 
 import javax.swing.table.DefaultTableModel
+import java.awt.event.MouseEvent
 
 class SearchWindowImplSpec extends BaseContainerSpec {
 
@@ -19,15 +20,15 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         contentFactory.createContent(_, _, _) >> { Mock(Content) }
 
         and:
-        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
-        rallyToolWindow.metaClass.getContentFactory = { contentFactory }
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.metaClass.getContentFactory = { contentFactory }
 
         and:
         ContentManager contentManager = Mock(ContentManager)
         ToolWindow toolWindow = Mock(ToolWindow)
 
         when:
-        rallyToolWindow.createToolWindowContent(null, toolWindow)
+        searchWindow.createToolWindowContent(null, toolWindow)
 
         then:
         1 * contentManager.addContent(_ as Content) >> {}
@@ -36,78 +37,104 @@ class SearchWindowImplSpec extends BaseContainerSpec {
 
     def "setupWindow populates choices"() {
         given:
-        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
-        rallyToolWindow.setupWindow()
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.setupWindow()
 
         expect:
-        rallyToolWindow.projectChoices.size() == projects.size() + 1
+        searchWindow.projectChoices.size() == projects.size() + 1
 
         and:
-        rallyToolWindow.projectChoices.getItemAt(0).toString() == ''
-        rallyToolWindow.projectChoices.getItemAt(1).toString() == projects[0].name
-        rallyToolWindow.projectChoices.getItemAt(2).toString() == projects[1].name
+        searchWindow.projectChoices.getItemAt(0).toString() == ''
+        searchWindow.projectChoices.getItemAt(1).toString() == projects[0].name
+        searchWindow.projectChoices.getItemAt(2).toString() == projects[1].name
+    }
+
+    def "handleTableClick adds artifact open artifact"() {
+        given:
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.setupWindow()
+        Artifact artifact = new Artifact(
+                formattedID: 'D1', name: 'name', lastUpdateDate: new Date(), _type: 'Defect', projectName: 'P1'
+        )
+
+        and:
+        searchWindow.addResult(artifact)
+        searchWindow.resultsTable.setRowSelectionInterval(0, 0)
+
+        expect:
+        OpenArtifacts.instance.artifacts.size() == 0
+
+        when:
+        searchWindow.handleTableClick(new MouseEvent(
+                searchWindow.resultsTable, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 0,
+                10, 10, /* location 10, 10 */ 2 /* double click*/, false
+        ))
+
+        then:
+        OpenArtifacts.instance.artifacts.size() == 1
+        OpenArtifacts.instance.artifacts.contains(artifact)
     }
 
     def "getType correctly determines type from drop-down"() {
         given:
-        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
-        rallyToolWindow.setupWindow()
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.setupWindow()
 
         expect:
-        rallyToolWindow.selectedType == Artifact
+        searchWindow.selectedType == Artifact
 
         when:
-        rallyToolWindow.typeChoices.setSelectedItem 'Defect'
+        searchWindow.typeChoices.setSelectedItem 'Defect'
 
         then:
-        rallyToolWindow.selectedType == Defect
+        searchWindow.selectedType == Defect
 
         when:
-        rallyToolWindow.typeChoices.setSelectedItem 'Requirement'
+        searchWindow.typeChoices.setSelectedItem 'Requirement'
 
         then:
-        rallyToolWindow.selectedType == Requirement
+        searchWindow.selectedType == Requirement
     }
 
     def "results table is not editable"() {
         given:
-        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
-        rallyToolWindow.setupWindow()
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.setupWindow()
 
-        rallyToolWindow.resultsTable.isCellEditable(0, 0)
+        searchWindow.resultsTable.isCellEditable(0, 0)
 
         when:
-        ((DefaultTableModel)rallyToolWindow.resultsTable.model).addRow(
+        ((DefaultTableModel) searchWindow.resultsTable.model).addRow(
                 'id', 'name', '', 'Defect'
         )
 
         then:
-        'id' == rallyToolWindow.resultsTable.getValueAt(0, 0)
-        !rallyToolWindow.resultsTable.isCellEditable(0, 0)
+        'id' == searchWindow.resultsTable.getValueAt(0, 0)
+        !searchWindow.resultsTable.isCellEditable(0, 0)
     }
 
     def "searchAttributes returns list based on checkbox selection"() {
         when:
-        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
-        rallyToolWindow.formattedIDCheckBox.selected = false
-        rallyToolWindow.nameCheckBox.selected = false
-        rallyToolWindow.descriptionCheckBox.selected = false
+        SearchWindowImpl searchWindow = new SearchWindowImpl()
+        searchWindow.formattedIDCheckBox.selected = false
+        searchWindow.nameCheckBox.selected = false
+        searchWindow.descriptionCheckBox.selected = false
 
         then:
-        rallyToolWindow.searchAttributes == []
+        searchWindow.searchAttributes == []
 
         when:
-        rallyToolWindow.formattedIDCheckBox.selected = true
+        searchWindow.formattedIDCheckBox.selected = true
 
         then:
-        rallyToolWindow.searchAttributes == ['FormattedID']
+        searchWindow.searchAttributes == ['FormattedID']
 
         when:
-        rallyToolWindow.nameCheckBox.selected = true
-        rallyToolWindow.descriptionCheckBox.selected = true
+        searchWindow.nameCheckBox.selected = true
+        searchWindow.descriptionCheckBox.selected = true
 
         then:
-        rallyToolWindow.searchAttributes == ['FormattedID', 'Name', 'Description']
+        searchWindow.searchAttributes == ['FormattedID', 'Name', 'Description']
     }
 
 }

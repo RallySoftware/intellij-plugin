@@ -4,12 +4,10 @@ import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.domain.Artifact
 
 import javax.swing.SwingUtilities
-import javax.swing.table.DefaultTableModel
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
 class SearchListener implements ActionListener, Runnable {
-    DefaultTableModel tableModel
     List<Artifact> results
     SearchWindowImpl window
     Search search = new Search()
@@ -32,13 +30,9 @@ class SearchListener implements ActionListener, Runnable {
     }
 
     void run() {
-        tableModel.rowCount = 0
-        window.searchResults = new HashMap<>()
-        results.each { Artifact result ->
-            window.searchResults[result.formattedID] = result
-            tableModel.addRow(
-                    [result.formattedID, result.name, result.formattedLastUpdateDate, result._type, result.projectName].toArray()
-            )
+        window.clear()
+        results.each {
+            window.addResult(it)
         }
     }
 }

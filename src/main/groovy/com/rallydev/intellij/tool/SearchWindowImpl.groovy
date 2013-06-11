@@ -20,7 +20,7 @@ import java.awt.event.MouseEvent
 class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     ToolWindow myToolWindow
-    Map<String, Artifact> searchResults
+    Map<String, Artifact> searchResults = new HashMap<>()
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
         myToolWindow = toolWindow
@@ -67,11 +67,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         resultsTable.addMouseListener(new MouseAdapter() {
             @Override
             void mouseClicked(MouseEvent mouseEvent) {
-                if(mouseEvent.clickCount == 2) {
-                    Artifact artifact = searchResults[(String)resultsTable.getValueAt(resultsTable.selectedRow, 0)]
-
-                    ServiceManager.getService(OpenArtifacts.class) << artifact
-                }
+                handleTableClick(mouseEvent)
             }
         })
 
@@ -83,13 +79,28 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void installSearchListener() {
-        searchButton.addActionListener(
-                new SearchListener(
-                        window: this, tableModel: (DefaultTableModel) resultsTable.getModel()
-                )
-        )
+        searchButton.addActionListener(new SearchListener(window: this))
         // ?. for test - explore IntelliJ test framework to better handle
         searchPane.rootPane?.setDefaultButton(searchButton)
+    }
+
+    void handleTableClick(MouseEvent mouseEvent) {
+        if (mouseEvent.clickCount == 2) {
+            Artifact artifact = searchResults[(String) resultsTable.getValueAt(resultsTable.selectedRow, 0)]
+            ServiceManager.getService(OpenArtifacts.class) << artifact
+        }
+    }
+
+    void clear() {
+        ((DefaultTableModel) resultsTable.model).rowCount = 0
+        searchResults = new HashMap<>()
+    }
+
+    void addResult(Artifact result) {
+        searchResults[result.formattedID] = result
+        ((DefaultTableModel) resultsTable.model).addRow(
+                [result.formattedID, result.name, result.formattedLastUpdateDate, result._type, result.projectName].toArray()
+        )
     }
 
     Class getSelectedType() {

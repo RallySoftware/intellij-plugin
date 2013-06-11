@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.testFramework.UsefulTestCase
 import com.rallydev.intellij.config.RallyConfig
+import com.rallydev.intellij.tool.OpenArtifacts
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
 import com.rallydev.intellij.wsapi.RallyClient
@@ -42,7 +43,9 @@ abstract class BaseContainerSpec extends Specification {
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
 
         registerComponentInstance(new ProjectCache(loaded: new Date(), projects: projects))
-        registerComponentImplementation(ProjectCacheService.class)
+        registerComponentImplementation(ProjectCacheService)
+
+        registerComponentImplementation(OpenArtifacts)
     }
 
     protected registerComponentInstance(Object instance) {
