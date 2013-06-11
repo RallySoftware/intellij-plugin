@@ -3,6 +3,7 @@ package com.rallydev.intellij.tool
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
@@ -21,8 +22,10 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     ToolWindow myToolWindow
     Map<String, Artifact> searchResults = new HashMap<>()
+    com.intellij.openapi.project.Project project
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
+        this.project = project
         myToolWindow = toolWindow
         Content content = getContentFactory().createContent(myToolWindowContent, "", false)
         setupWindow()
@@ -34,11 +37,6 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         setupProjectChoices()
         setupTable()
         installSearchListener()
-    }
-
-    //todo: for mocking - explore IntelliJ's base test cases for different way
-    ContentFactory getContentFactory() {
-        ContentFactory.SERVICE.getInstance()
     }
 
     void setupTypeChoices() {
@@ -87,6 +85,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     void handleTableClick(MouseEvent mouseEvent) {
         if (mouseEvent.clickCount == 2) {
             Artifact artifact = searchResults[(String) resultsTable.getValueAt(resultsTable.selectedRow, 0)]
+            toolWindowManager.getToolWindow("Rally Artifacts").activate(null)
             ServiceManager.getService(OpenArtifacts.class) << artifact
         }
     }
@@ -135,6 +134,15 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     String getSelectedProject() {
         projectChoices.getSelectedItem()?.project?._ref
     }
+
+    ContentFactory getContentFactory() {
+        ContentFactory.SERVICE.getInstance()
+    }
+
+    ToolWindowManager getToolWindowManager() {
+        ToolWindowManager.getInstance(project)
+    }
+
 
     static class ProjectItem {
         @Delegate

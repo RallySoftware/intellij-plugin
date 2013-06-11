@@ -46,6 +46,7 @@
                 </constraints>
                 <properties>
                   <contentType value="text/html"/>
+                  <editable value="false"/>
                 </properties>
               </component>
               <component id="5af92" class="javax.swing.JLabel">
@@ -64,6 +65,7 @@
                 </constraints>
                 <properties>
                   <contentType value="text/html"/>
+                  <editable value="false"/>
                 </properties>
               </component>
               <component id="aaef6" class="javax.swing.JLabel">

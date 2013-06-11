@@ -1,6 +1,7 @@
 package com.rallydev.intellij.tool
 
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.content.ContentManager
@@ -61,6 +62,12 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.addResult(artifact)
         searchWindow.resultsTable.setRowSelectionInterval(0, 0)
 
+        and:
+        ToolWindowManager toolWindowManager = Mock(ToolWindowManager)
+        ToolWindow toolWindow = Mock(ToolWindow)
+        1 * toolWindowManager.getToolWindow(_) >> toolWindow
+        searchWindow.metaClass.getToolWindowManager = { toolWindowManager }
+
         expect:
         OpenArtifacts.instance.artifacts.size() == 0
 
@@ -73,6 +80,9 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         then:
         OpenArtifacts.instance.artifacts.size() == 1
         OpenArtifacts.instance.artifacts.contains(artifact)
+
+        and:
+        1 * toolWindow.activate(_)
     }
 
     def "getType correctly determines type from drop-down"() {
