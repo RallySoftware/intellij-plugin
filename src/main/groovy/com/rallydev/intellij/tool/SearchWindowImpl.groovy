@@ -17,8 +17,9 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
 //todo: store checkbox state
-class RallyToolWindowImpl extends RallyToolWindow implements ToolWindowFactory {
+class SearchWindowImpl extends RallyToolWindow implements ToolWindowFactory {
 
+    ToolWindow myToolWindow
     Map<String, Artifact> searchResults
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {

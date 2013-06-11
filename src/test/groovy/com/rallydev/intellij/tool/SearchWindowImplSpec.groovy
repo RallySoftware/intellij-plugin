@@ -11,7 +11,7 @@ import com.rallydev.intellij.wsapi.domain.Requirement
 
 import javax.swing.table.DefaultTableModel
 
-class RallyToolWindowImplSpec extends BaseContainerSpec {
+class SearchWindowImplSpec extends BaseContainerSpec {
 
     def "createToolWindowContent adds content"() {
         given: 'Mock out the IntelliJ pieces'
@@ -19,7 +19,7 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
         contentFactory.createContent(_, _, _) >> { Mock(Content) }
 
         and:
-        RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()
+        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
         rallyToolWindow.metaClass.getContentFactory = { contentFactory }
 
         and:
@@ -36,7 +36,7 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
 
     def "setupWindow populates choices"() {
         given:
-        RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()
+        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
         rallyToolWindow.setupWindow()
 
         expect:
@@ -50,7 +50,7 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
 
     def "getType correctly determines type from drop-down"() {
         given:
-        RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()
+        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
         rallyToolWindow.setupWindow()
 
         expect:
@@ -71,7 +71,7 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
 
     def "results table is not editable"() {
         given:
-        RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()
+        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
         rallyToolWindow.setupWindow()
 
         rallyToolWindow.resultsTable.isCellEditable(0, 0)
@@ -88,7 +88,7 @@ class RallyToolWindowImplSpec extends BaseContainerSpec {
 
     def "searchAttributes returns list based on checkbox selection"() {
         when:
-        RallyToolWindowImpl rallyToolWindow = new RallyToolWindowImpl()
+        SearchWindowImpl rallyToolWindow = new SearchWindowImpl()
         rallyToolWindow.formattedIDCheckBox.selected = false
         rallyToolWindow.nameCheckBox.selected = false
         rallyToolWindow.descriptionCheckBox.selected = false
