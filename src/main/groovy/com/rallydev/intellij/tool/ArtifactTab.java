@@ -9,13 +9,14 @@ public class ArtifactTab {
     protected JPanel contentPanel;
 
     protected JLabel header;
-    protected JLabel project;
-    protected JLabel lastUpdated;
+    protected JLabel projectLabel;
+    protected JLabel lastUpdatedLabel;
     protected JTextPane description;
     protected JTextPane notes;
 
     protected JButton viewInRallyButton;
     protected JPanel buttonPanel;
+    protected JButton openTaskContextButton;
 
     protected ArtifactTab() { }
 

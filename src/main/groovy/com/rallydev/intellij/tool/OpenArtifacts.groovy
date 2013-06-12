@@ -11,7 +11,6 @@ class OpenArtifacts extends Observable {
         return ServiceManager.getService(OpenArtifacts.class);
     }
 
-
     void add(Artifact artifact) {
         setChanged()
         notifyObservers(artifact)

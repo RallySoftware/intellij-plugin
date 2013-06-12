@@ -28,23 +28,28 @@
         <applicationService serviceInterface="com.rallydev.intellij.config.RallyConfig"
                             serviceImplementation="com.rallydev.intellij.config.RallyConfig"/>
 
+        <applicationService serviceInterface="com.rallydev.intellij.task.RallyRepositoryManager"
+                            serviceImplementation="com.rallydev.intellij.task.RallyRepositoryManager"/>
+
+        <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
+                            serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts"/>
+
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.RallyClient"
                             serviceImplementation="com.rallydev.intellij.wsapi.RallyClient"/>
 
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCache"
-                            serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache" />
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache"/>
 
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCacheService"
-                            serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCacheService" />
-
-        <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
-                            serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts" />
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCacheService"/>
 
         <applicationService serviceInterface="com.rallydev.intellij.util.SwingService"
-                            serviceImplementation="com.rallydev.intellij.util.SwingService" />
+                            serviceImplementation="com.rallydev.intellij.util.SwingService"/>
 
-        <toolWindow id="Rally Search" icon="/rally13.png" anchor="bottom" factoryClass="com.rallydev.intellij.tool.SearchWindowImpl" />
-        <toolWindow id="Rally Artifacts" icon="/rally13.png" anchor="right" canCloseContents="true" factoryClass="com.rallydev.intellij.tool.ArtifactWindowImpl" />
+        <toolWindow id="Rally Search" icon="/rally13.png" anchor="bottom"
+                    factoryClass="com.rallydev.intellij.tool.SearchWindowImpl"/>
+        <toolWindow id="Rally Artifacts" icon="/rally13.png" anchor="right" canCloseContents="true"
+                    factoryClass="com.rallydev.intellij.tool.ArtifactWindowImpl"/>
 
         <tasks.repositoryType implementation="com.rallydev.intellij.task.RallyRepositoryType"/>
 
