@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi
 
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.rallydev.intellij.config.RallyConfig
@@ -39,6 +40,10 @@ class RallyClient extends HttpClient {
         state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password))
 
         def method = new GetMethod(request.getEncodedUrl(server))
+        method.addRequestHeader('X-RallyIntegrationName', 'IntelliJ Plugin')
+        method.addRequestHeader('X-RallyIntegrationVendor', 'Rally Software')
+        method.addRequestHeader('X-RallyIntegrationPlatform', "${ApplicationInfo.instance?.build}")
+
         log.debug "Rally Client requesting [${method.URI}]"
         int code = executeMethod(method)
 
