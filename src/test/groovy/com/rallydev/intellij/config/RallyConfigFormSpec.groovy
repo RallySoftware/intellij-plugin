@@ -16,6 +16,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         form.url.text == config.url
         form.userName.text == config.userName
         form.password.text == config.password
+        form.rememberPassword.selected == config.rememberPassword
     }
 
     def "isModified false when initially loaded"() {
@@ -29,9 +30,17 @@ class RallyConfigFormSpec extends BaseContainerSpec {
 
     @Unroll
     def "isModified changes with field values"() {
-        when:
+        given:
         RallyConfigForm form = new RallyConfigForm()
         form.createComponent()
+
+        when:
+        form.rememberPassword.selected = !form.rememberPassword.selected
+
+        then:
+        form.isModified()
+
+        when:
         form[field].text = newValue
 
         then:
@@ -47,6 +56,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         String url = 'http://yahoo'
         String userName = 'newUserName'
         String password = 'newPassword'
+        Boolean rememberPassword = true
 
         and:
         RallyConfigForm form = new RallyConfigForm()
@@ -54,6 +64,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         form.url.text = url
         form.userName.text = userName
         form.password.text = password
+        form.rememberPassword.selected = rememberPassword
 
         when:
         form.apply()
@@ -62,6 +73,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         config.url == url
         config.userName == userName
         config.password == password
+        config.rememberPassword == rememberPassword
     }
 
     def "Reset sets to initial config values"() {
@@ -70,6 +82,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         form.url.text = 'http://yahoo.com'
         form.userName.text = 'newUserName'
         form.password.text = 'newPassword'
+        form.rememberPassword.selected = false
 
         when:
         form.reset()
@@ -78,6 +91,43 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         form.url.text == config.url
         form.userName.text == config.userName
         form.password.text == config.password
+        form.rememberPassword.selected == config.rememberPassword
+    }
+
+    def "Configed password is cleared when applying without remember"() {
+        given:
+        RallyConfigForm form = new RallyConfigForm()
+        form.createComponent()
+        form.rememberPassword.selected = false
+
+        expect:
+        config.password
+
+        when:
+        form.apply()
+
+        then:
+        !config.password
+    }
+
+    def "toggle password sets password field's enabled state based on remember checkbox"() {
+        given:
+        RallyConfigForm form = new RallyConfigForm()
+        form.createComponent()
+
+        when:
+        form.rememberPassword.selected = true
+        form.togglePassword()
+
+        then:
+        form.password.enabled
+
+        when:
+        form.rememberPassword.selected = false
+        form.togglePassword()
+
+        then:
+        !form.password.enabled
     }
 
 }

@@ -12,7 +12,7 @@ class RallyRepositoryManager {
     Project project
 
     public static RallyRepositoryManager getInstance() {
-        return ServiceManager.getService(RallyRepositoryManager.class);
+        return ServiceManager.getService(RallyRepositoryManager.class)
     }
 
     RallyRepositoryManager(Project project) {

@@ -61,6 +61,6 @@ abstract class DomainObject {
         "${getClass().simpleName} [${objectID}]"
     }
 
-    abstract ApiEndpoint getApiEndpoint();
+    abstract ApiEndpoint getApiEndpoint()
 
 }

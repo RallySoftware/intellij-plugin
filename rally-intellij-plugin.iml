@@ -15,6 +15,15 @@
     <orderEntry type="library" scope="TEST" name="libs-test" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="tasks-api" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="tasks-core" level="project" />
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library name="jira-connector">
+        <CLASSES>
+          <root url="jar://$APPLICATION_HOME_DIR$/plugins/tasks/lib/jira-connector.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
 

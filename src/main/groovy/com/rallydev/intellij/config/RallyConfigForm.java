@@ -2,21 +2,23 @@ package com.rallydev.intellij.config;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
-import com.rallydev.intellij.wsapi.RallyClient;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.net.MalformedURLException;
-import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class RallyConfigForm implements SearchableConfigurable {
 
     private JPanel configPanel;
+
     private JTextField url;
     private JTextField userName;
     private JPasswordField password;
+    private JCheckBox rememberPassword;
+
     private JButton testConnectionButton;
     private JButton invalidateCachesButton;
 
@@ -24,6 +26,12 @@ public class RallyConfigForm implements SearchableConfigurable {
 
     public RallyConfigForm() {
         rallyConfig = RallyConfig.getInstance();
+        rememberPassword.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                togglePassword();
+            }
+        });
     }
 
     public JTextField getUrl() {
@@ -36,6 +44,10 @@ public class RallyConfigForm implements SearchableConfigurable {
 
     public JPasswordField getPassword() {
         return password;
+    }
+
+    public JCheckBox getRememberPassword() {
+        return rememberPassword;
     }
 
     @Override
@@ -61,10 +73,14 @@ public class RallyConfigForm implements SearchableConfigurable {
 
     @Override
     public boolean isModified() {
-        return !(StringUtils.equals(url.getText(), rallyConfig.url)
-                && StringUtils.equals(userName.getText(), rallyConfig.userName)
-                && StringUtils.equals(new String(password.getPassword()), rallyConfig.password)
-        );
+        boolean isModified = !StringUtils.equals(url.getText(), rallyConfig.url);
+        isModified = isModified || !StringUtils.equals(userName.getText(), rallyConfig.userName);
+        if (rememberPassword.isSelected()) {
+            isModified = isModified || !StringUtils.equals(new String(password.getPassword()), rallyConfig.getPassword());
+        }
+        isModified = isModified || rememberPassword.isSelected() != rallyConfig.rememberPassword;
+
+        return isModified;
     }
 
     @Nullable
@@ -79,12 +95,22 @@ public class RallyConfigForm implements SearchableConfigurable {
     }
 
     private void setupFromConfig() {
-        System.out.println(url);
-        System.out.println(rallyConfig);
-
         url.setText(rallyConfig.url);
         userName.setText(rallyConfig.userName);
-        password.setText(rallyConfig.password);
+        rememberPassword.setSelected(rallyConfig.rememberPassword);
+
+        togglePassword();
+        if(rallyConfig.rememberPassword) {
+            password.setText(rallyConfig.getPassword());
+        }
+    }
+
+    public void togglePassword() {
+        if (rememberPassword.isSelected()) {
+            password.setEnabled(true);
+        } else {
+            password.setEnabled(false);
+        }
     }
 
     @Nullable
@@ -97,7 +123,12 @@ public class RallyConfigForm implements SearchableConfigurable {
     public void apply() throws ConfigurationException {
         rallyConfig.url = url.getText();
         rallyConfig.userName = userName.getText();
-        rallyConfig.password = new String(password.getPassword());
+        if (!rememberPassword.isSelected()) {
+            RallyConfig.getInstance().clearPassword();
+        } else {
+            rallyConfig.setPassword(new String(password.getPassword()));
+        }
+        rallyConfig.rememberPassword = rememberPassword.isSelected();
     }
 
     @Override
@@ -107,10 +138,6 @@ public class RallyConfigForm implements SearchableConfigurable {
 
     @Override
     public void disposeUIResources() {
-    }
-
-    RallyClient getClient() throws MalformedURLException {
-        return new RallyClient(new URL(url.getText()), userName.getText(), new String(password.getPassword()));
     }
 
 }

@@ -8,7 +8,7 @@ class OpenArtifacts extends Observable {
     List<Artifact> artifacts = new ArrayList<>()
 
     public static OpenArtifacts getInstance() {
-        return ServiceManager.getService(OpenArtifacts.class);
+        return ServiceManager.getService(OpenArtifacts.class)
     }
 
     void add(Artifact artifact) {

@@ -10,8 +10,6 @@ import com.rallydev.intellij.wsapi.ResultList
 import com.rallydev.intellij.wsapi.ResultListImpl
 import com.rallydev.intellij.wsapi.domain.DomainObject
 
-//todo: investigate IntelliJ's provided DI, move RallyClient to injected
-
 class GenericDao<T extends DomainObject> {
     Class<T> domainClass
 

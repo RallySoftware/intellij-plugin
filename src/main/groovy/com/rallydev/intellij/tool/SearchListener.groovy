@@ -1,5 +1,6 @@
 package com.rallydev.intellij.tool
 
+import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.domain.Artifact
 
@@ -14,6 +15,7 @@ class SearchListener implements ActionListener, Runnable {
 
     @Override
     void actionPerformed(ActionEvent actionEvent) {
+        RallyClient.instance.ensurePasswordLoaded()
         Thread.start { doActionPerformed() }
     }
 

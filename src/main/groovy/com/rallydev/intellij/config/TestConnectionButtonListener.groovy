@@ -21,7 +21,11 @@ class TestConnectionButtonListener implements ActionListener {
     public void actionPerformed(ActionEvent actionEvent) {
         String error = null
         try {
-            new ConnectionTest().doTest()
+            new ConnectionTest(
+                    form.url.getText().toURL(), form.userName.text,
+                    form.password.password as String,
+                    !form.rememberPassword.selected
+            ).doTest()
         } catch (Exception e) {
             error = messageFromException(e)
         }

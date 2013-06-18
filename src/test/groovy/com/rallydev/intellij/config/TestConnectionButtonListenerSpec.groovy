@@ -4,37 +4,41 @@ import com.google.gson.JsonSyntaxException
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.TestDialog
 import com.rallydev.intellij.BaseContainerSpec
-import com.rallydev.intellij.SpecUtils
-import com.rallydev.intellij.wsapi.ApiResponse
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.ConnectionTest
 import org.apache.commons.httpclient.auth.InvalidCredentialsException
 
 class TestConnectionButtonListenerSpec extends BaseContainerSpec {
 
     List<String> messages
-    RallyConfigForm mockForm
-    RallyClient mockClient
+    RallyConfigForm form
+
+    ConnectionTest connectionTest
 
     def setup() {
         messages = []
-        mockForm = Mock(RallyConfigForm)
+        form = new RallyConfigForm()
+        form.with {
+            url.text = 'http://google.com'
+            userName.text = 'sbrin'
+            password.text = 'glass'
+        }
+
         Messages.testDialog = new TestDialog() {
             int show(String message) {
                 messages << message
                 return 0
             }
         }
-        mockClient = Mock(RallyClient)
 
-        registerComponentInstance(RallyClient.name, mockClient)
+        connectionTest = GroovySpy(ConnectionTest, global: true)
     }
 
     def "Message on success"() {
         given:
-        1 * mockClient.makeRequest(_) >> { new ApiResponse(SpecUtils.minimalResponseJson) }
+        connectionTest.doTest() >> {}
 
         and:
-        TestConnectionButtonListener listener = new TestConnectionButtonListener(mockForm)
+        TestConnectionButtonListener listener = new TestConnectionButtonListener(form)
 
         when:
         listener.actionPerformed(null)
@@ -45,10 +49,10 @@ class TestConnectionButtonListenerSpec extends BaseContainerSpec {
 
     def "Message for auth failure"() {
         given:
-        1 * mockClient.makeRequest(_) >> { throw new InvalidCredentialsException() }
+        connectionTest.doTest() >> { throw new InvalidCredentialsException() }
 
         and:
-        TestConnectionButtonListener listener = new TestConnectionButtonListener(mockForm)
+        TestConnectionButtonListener listener = new TestConnectionButtonListener(form)
 
         when:
         listener.actionPerformed(null)
@@ -59,10 +63,10 @@ class TestConnectionButtonListenerSpec extends BaseContainerSpec {
 
     def "Message for bad response"() {
         given:
-        1 * mockClient.makeRequest(_) >> { throw new JsonSyntaxException('Wrong') }
+        connectionTest.doTest() >> { throw new JsonSyntaxException('Wrong') }
 
         and:
-        TestConnectionButtonListener listener = new TestConnectionButtonListener(mockForm)
+        TestConnectionButtonListener listener = new TestConnectionButtonListener(form)
 
         when:
         listener.actionPerformed(null)

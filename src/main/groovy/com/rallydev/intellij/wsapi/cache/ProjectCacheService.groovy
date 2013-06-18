@@ -20,7 +20,7 @@ class ProjectCacheService {
     }
 
     public static ProjectCacheService getInstance() {
-        return ServiceManager.getService(ProjectCacheService.class);
+        return ServiceManager.getService(ProjectCacheService.class)
     }
 
     List<Project> getCachedProjects() {

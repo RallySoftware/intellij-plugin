@@ -33,7 +33,7 @@ class RallyTask extends Task {
         switch (artifact._type) {
             case Requirement.TYPE:
                 type = TaskType.FEATURE
-                break;
+                break
             case Defect.TYPE:
                 type = TaskType.BUG
                 break

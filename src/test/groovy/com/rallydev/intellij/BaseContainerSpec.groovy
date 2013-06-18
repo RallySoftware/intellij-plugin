@@ -4,7 +4,9 @@ import com.intellij.mock.MockApplication
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.testFramework.LightPlatformTestCase
 import com.intellij.testFramework.UsefulTestCase
+import com.intellij.util.ui.UIUtil
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.tool.OpenArtifacts
 import com.rallydev.intellij.util.SwingService
@@ -14,6 +16,7 @@ import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.cache.ProjectCache
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Project
+import org.jetbrains.annotations.NotNull
 import org.picocontainer.MutablePicoContainer
 import spock.lang.Specification
 
@@ -21,18 +24,21 @@ abstract class BaseContainerSpec extends Specification {
 
     MutablePicoContainer picoContainer
 
-    RallyConfig config
     RallyClient recordingClient
     List<String> recordingClientRequests = []
 
+    RallyConfig config
     List<Project> projects = [new Project(name: 'Project1'), new Project(name: 'Project1')]
 
     def setup() {
         ApplicationManager.setApplication(new MockApplication(myTestRootDisposable), myTestRootDisposable)
         picoContainer = ((MutablePicoContainer) ApplicationManager.application.getPicoContainer())
 
-        config = new RallyConfig(url: 'http://google.com', userName: 'matt', password: 'monkey')
-        registerComponentInstance(config)
+        config = Spy(TestConfig)
+        config.userName = 'matt'
+        config.url = 'http://google.com'
+        config.rememberPassword = true
+        registerComponentInstance(RallyConfig.name, config)
 
         recordingClient = Mock(RallyClient)
         recordingClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
@@ -63,9 +69,14 @@ abstract class BaseContainerSpec extends Specification {
     }
 
     protected registerComponentImplementation(Class serviceImplementation) {
-        picoContainer.unregisterComponent(serviceImplementation.name)
+        registerComponentImplementation(serviceImplementation.name, serviceImplementation)
+    }
+
+    protected registerComponentImplementation(String key, Class serviceImplementation) {
+        picoContainer.unregisterComponent(key)
         picoContainer.registerComponentImplementation(serviceImplementation.name, serviceImplementation)
     }
+
 
     //From com.intellij.testFramework.UsefulTestCase
     protected final Disposable myTestRootDisposable = new Disposable() {
@@ -78,5 +89,53 @@ abstract class BaseContainerSpec extends Specification {
             return BaseContainerSpec + (StringUtil.isEmpty(testName) ? "" : ".test" + testName)
         }
     }
+
+    protected class TestConfig extends RallyConfig {
+        String password = 'monkey'
+
+        @Override
+        @NotNull
+        String getPassword() {
+            password
+        }
+
+        @Override
+        void setPassword(String password) {
+            this.password = password
+        }
+    }
+
+    protected setupProject() {
+        //registerComponentImplementation(ProjectManager.name, ProjectManagerImpl)
+        LightPlatformTestCase intellijTestCase = new LightPlatformTestCase() {
+            String getName() {
+                'hello'
+            }
+
+            @Override
+            protected String getTestName(boolean lowercaseFirstLetter) {
+                String name = getName();
+                //assertTrue("Test name should start with 'test': " + name, name.startsWith("test"));
+                name = name.substring("test".length());
+//                if (name.length() > 0 && lowercaseFirstLetter && !UsefulTestCase.isAllUppercaseName(name)) {
+//                    name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+//                }
+                return name;
+            }
+
+
+        }
+        UIUtil.invokeAndWaitIfNeeded(new Runnable() {
+            @Override
+            void run() {
+                intellijTestCase.setUp()
+            }
+        })
+    }
+
+    String getName() {
+        'hello'
+    }
+
 
 }

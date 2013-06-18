@@ -27,7 +27,7 @@ class OpenTaskListener implements ActionListener {
     @Override
     void actionPerformed(ActionEvent actionEvent) {
         RallyTask task = new RallyTask(artifact)
-        taskManager.activateTask(task, true, false);
+        taskManager.activateTask(task, true, false)
     }
 
 }

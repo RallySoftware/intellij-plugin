@@ -1,7 +1,5 @@
 package com.rallydev.intellij
 
-import com.rallydev.intellij.wsapi.ApiResponse
-
 class SpecUtils {
 
     static String minimalResponseJson = '''

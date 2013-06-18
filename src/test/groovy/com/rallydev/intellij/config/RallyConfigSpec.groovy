@@ -1,29 +1,86 @@
 package com.rallydev.intellij.config
 
-import spock.lang.Specification
+import com.rallydev.intellij.PlatformSpecification
+import org.jdom.Element
 
-class RallyConfigSpec extends Specification {
+class RallyConfigSpec extends PlatformSpecification {
 
-    def "Load state correctly copies values"() {
+    def "loadState correctly copies values"() {
         given:
-        def password = 'monkey'
         def userName = 'matt'
         def url = 'http://localhost:70001/'
 
         and:
-        RallyConfig storedConfig = new RallyConfig(
-                password: password, userName: userName, url: url, rememberPassword: true
-        )
-        RallyConfig loadedConfig = new RallyConfig()
+        Element element = new Element(RallyConfig.RALLY_CONFIG_TAG)
+        element.setAttribute(RallyConfig.URL, url)
+        element.setAttribute(RallyConfig.USER_NAME, userName)
+        element.setAttribute(RallyConfig.REMEMBER_PASSWORD, String.valueOf(true))
 
         when:
-        loadedConfig.loadState(storedConfig)
+        RallyConfig loadedConfig = new RallyConfig()
+        loadedConfig.loadState(element)
 
         then:
-        loadedConfig.password == password
         loadedConfig.userName == userName
         loadedConfig.url == url
         loadedConfig.rememberPassword
+    }
+
+    def "getState returns element with config data "() {
+        given:
+        RallyConfig rallyConfig = new RallyConfig(url: 'http://yahoo.com', userName: 'merissa', rememberPassword: true)
+
+        when:
+        Element xmlConfig = rallyConfig.getState()
+
+        then:
+        xmlConfig.getAttributeValue(RallyConfig.URL) == rallyConfig.url
+        xmlConfig.getAttributeValue(RallyConfig.USER_NAME) == rallyConfig.userName
+        Boolean.valueOf(xmlConfig.getAttributeValue(RallyConfig.REMEMBER_PASSWORD)) == rallyConfig.rememberPassword
+    }
+
+    def "password set and get succeeds"() {
+        given:
+        RallyConfig rallyConfig = new RallyConfig(url: 'http://yahoo.com', userName: 'merissa', rememberPassword: true)
+
+        expect:
+        !rallyConfig.getPassword()
+
+        when:
+        rallyConfig.password = 'abc123'
+
+        then:
+        rallyConfig.getPassword() == 'abc123'
+    }
+
+    def "clear password removes password from config"() {
+        given:
+        RallyConfig rallyConfig = new RallyConfig(url: 'http://yahoo.com', userName: 'merissa', rememberPassword: true)
+        rallyConfig.password = 'abc123'
+
+        expect:
+        rallyConfig.password
+
+        when:
+        rallyConfig.clearPassword()
+
+        then:
+        !rallyConfig.password
+    }
+
+    def "store password saved to master password database"() {
+        given:
+        RallyConfig rallyConfig = new RallyConfig(url: 'http://yahoo.com', userName: 'merissa', rememberPassword: true)
+
+        expect:
+        !rallyConfig.getStoredPassword()
+
+        when:
+        rallyConfig.setPassword('abc123')
+        rallyConfig.storePassword()
+
+        then:
+        rallyConfig.getStoredPassword() == 'abc123'
     }
 
 }
