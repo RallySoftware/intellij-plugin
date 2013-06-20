@@ -5,6 +5,7 @@ import com.google.gson.stream.MalformedJsonException
 import com.intellij.openapi.ui.Messages
 import com.rallydev.intellij.wsapi.ConnectionTest
 import org.apache.commons.httpclient.auth.InvalidCredentialsException
+import org.codehaus.groovy.runtime.StackTraceUtils
 
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -37,22 +38,23 @@ class TestConnectionButtonListener implements ActionListener {
     }
 
     private static String messageFromException(Exception e) {
-        switch (e.class) {
+        Throwable rootCause = StackTraceUtils.extractRootCause(e)
+        switch (rootCause.class) {
             case InvalidCredentialsException:
-                "Invalid credentials: ${e.getMessage()}"
+                "Invalid credentials: ${rootCause.getMessage()}"
                 break
             case MalformedURLException:
-                "Invalid URL: ${e.message}"
+                "Invalid URL: ${rootCause.message}"
                 break
             case UnknownHostException:
-                "Unknown host: ${e.message}"
+                "Unknown host: ${rootCause.message}"
                 break
             case MalformedJsonException:
             case JsonSyntaxException:
                 "The server responded incorrectly (check the URL)"
                 break
             default:
-                "Unknown error: ${e.message}"
+                "Unknown error: ${rootCause.message}"
         }
     }
 

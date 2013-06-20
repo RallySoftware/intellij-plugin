@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi
 
+import com.google.common.util.concurrent.ListenableFuture
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.SpecUtils
 
@@ -14,7 +15,11 @@ class ConnectionTestSpec extends BaseContainerSpec {
         new ConnectionTest().doTest()
 
         then:
-        1 * rallyClient.makeRequest(_) >> { new ApiResponse(SpecUtils.minimalResponseJson) }
+        1 * rallyClient.makeRequest(_) >> {
+            Mock(ListenableFuture) {
+                get() >> { new ApiResponse(SpecUtils.minimalResponseJson) }
+            }
+        }
     }
 
     def "Ensure exception when no response results"() {

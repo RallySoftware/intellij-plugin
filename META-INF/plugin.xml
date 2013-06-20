@@ -25,24 +25,25 @@
         <applicationConfigurable instance="com.rallydev.intellij.config.RallyConfigForm"/>
 
         <!--todo: evaluate moving to project level - or project specific workspaces -->
+        <!--Task plugin services-->
         <applicationService serviceInterface="com.rallydev.intellij.config.RallyConfig"
                             serviceImplementation="com.rallydev.intellij.config.RallyConfig"/>
-
         <applicationService serviceInterface="com.rallydev.intellij.task.RallyRepositoryManager"
                             serviceImplementation="com.rallydev.intellij.task.RallyRepositoryManager"/>
 
+        <!--Rally services-->
         <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
                             serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts"/>
-
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.RallyClient"
                             serviceImplementation="com.rallydev.intellij.wsapi.RallyClient"/>
-
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCache"
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache"/>
-
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCacheService"
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCacheService"/>
 
+        <!--Other services-->
+        <applicationService serviceInterface="com.rallydev.intellij.util.AsyncService"
+                            serviceImplementation="com.rallydev.intellij.util.AsyncService"/>
         <applicationService serviceInterface="com.rallydev.intellij.util.SwingService"
                             serviceImplementation="com.rallydev.intellij.util.SwingService"/>
 

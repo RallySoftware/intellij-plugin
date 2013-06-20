@@ -1,5 +1,7 @@
 package com.rallydev.intellij.wsapi
 
+import com.rallydev.intellij.util.AsyncService
+
 import java.awt.*
 
 class RallyClientConfigurable extends RallyClient {
@@ -11,6 +13,8 @@ class RallyClientConfigurable extends RallyClient {
     Boolean promptForPassword
 
     RallyClientConfigurable(URL server, String username, String password, Boolean promptForPassword) {
+        super(AsyncService.getInstance())
+
         this.server = server
         this.username = username
         this.password = password

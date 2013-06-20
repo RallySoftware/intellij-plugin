@@ -1,5 +1,6 @@
 package com.rallydev.intellij
 
+import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.mock.MockApplication
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -43,7 +44,9 @@ abstract class BaseContainerSpec extends Specification {
         recordingClient = Mock(RallyClient)
         recordingClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
             recordingClientRequests << request.getUrl(config.url.toURL())
-            return new ApiResponse(SpecUtils.minimalResponseJson)
+            Mock(ListenableFuture) {
+                get() >> new ApiResponse(SpecUtils.minimalResponseJson)
+            }
         }
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
 

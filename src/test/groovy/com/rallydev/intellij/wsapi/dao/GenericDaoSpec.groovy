@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi.dao
 
+import com.google.common.util.concurrent.ListenableFuture
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
@@ -13,7 +14,10 @@ class GenericDaoSpec extends BaseContainerSpec {
         given:
         RallyClient rallyClient = Mock(RallyClient)
         rallyClient.makeRequest(_ as GetRequest) >> {
-            new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('single_requirement.json').text)
+            Mock(ListenableFuture) {
+                get() >> new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('single_requirement.json').text)
+            }
+
         }
         registerComponentInstance(RallyClient.name, rallyClient)
 
@@ -39,7 +43,9 @@ class GenericDaoSpec extends BaseContainerSpec {
         GetRequest madeRequest = null
         rallyClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
             madeRequest = request
-            new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
+            Mock(ListenableFuture) {
+                get() >> new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
+            }
         }
         registerComponentInstance(RallyClient.name, rallyClient)
 
@@ -60,7 +66,9 @@ class GenericDaoSpec extends BaseContainerSpec {
         GetRequest madeRequest = null
         rallyClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
             madeRequest = request
-            new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
+            Mock(ListenableFuture) {
+                get() >> new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
+            }
         }
         registerComponentInstance(RallyClient.name, rallyClient)
 

@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi
 
+import com.google.common.util.concurrent.ListenableFuture
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.wsapi.domain.Requirement
 
@@ -8,7 +9,9 @@ class ResultListSpec extends BaseContainerSpec {
     void setupClient() {
         RallyClient client = Mock(RallyClient) {
             1 * makeRequest(_ as GetRequest) >> {
-                new ApiResponse(ResultListSpec.classLoader.getResourceAsStream('multiple_requirements2.json').text)
+                Mock(ListenableFuture) {
+                    get() >> new ApiResponse(ResultListSpec.classLoader.getResourceAsStream('multiple_requirements2.json').text)
+                }
             }
         }
         registerComponentInstance(RallyClient.name, client)

@@ -31,7 +31,7 @@ class ResultListImpl<T extends DomainObject> extends ArrayList<T> implements Res
         request = request.clone()
         request.startIndex = nextStartIndex
 
-        parseResponse(RallyClient.getInstance().makeRequest(request))
+        parseResponse(RallyClient.getInstance().makeRequest(request).get())
     }
 
     private void parseResponse(ApiResponse response) {

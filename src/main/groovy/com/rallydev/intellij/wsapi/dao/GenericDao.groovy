@@ -21,7 +21,7 @@ class GenericDao<T extends DomainObject> {
         GetRequest request = new GetRequest(ApiEndpoint.ARTIFACT)
                 .withFetch()
                 .withObjectId(id)
-        fromSingleResponse(RallyClient.getInstance().makeRequest(request))
+        fromSingleResponse(RallyClient.getInstance().makeRequest(request).get())
     }
 
     ResultList<T> find(String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
@@ -43,7 +43,7 @@ class GenericDao<T extends DomainObject> {
             request.withQuery(query.toString())
         }
 
-        ApiResponse response = RallyClient.getInstance().makeRequest(request)
+        ApiResponse response = RallyClient.getInstance().makeRequest(request).get()
         return new ResultListImpl<T>(domainClass, request, response)
     }
 

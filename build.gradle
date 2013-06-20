@@ -18,7 +18,8 @@ task 'libsTest'(type: Copy) {
 }
 
 dependencies {
-    compile 'org.simpleframework:simple-xml:2.7'
+    compile 'com.google.guava:guava:14.0.1'
+
     testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
         exclude group: 'org.codehaus.groovy'
     }

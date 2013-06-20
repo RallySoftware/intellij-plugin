@@ -6,6 +6,10 @@ import org.junit.Rule
 import org.junit.rules.TestName
 import spock.lang.Specification
 
+/**
+ * todo: Something isn't quite right with this spec; only a single
+ * todo: class can extend it due to something around indexes and index shutdown
+ */
 abstract class PlatformSpecification extends Specification {
 
     @Rule TestName testName = new TestName()

@@ -61,6 +61,20 @@ class TestConnectionButtonListenerSpec extends BaseContainerSpec {
         messages.first().toLowerCase().contains('invalid credentials')
     }
 
+    def "Messaging successfully unwraps exceptions"() {
+        given:
+        connectionTest.doTest() >> { throw new RuntimeException(new RuntimeException(new InvalidCredentialsException())) }
+
+        and:
+        TestConnectionButtonListener listener = new TestConnectionButtonListener(form)
+
+        when:
+        listener.actionPerformed(null)
+
+        then:
+        messages.first().toLowerCase().contains('invalid credentials')
+    }
+
     def "Message for bad response"() {
         given:
         connectionTest.doTest() >> { throw new JsonSyntaxException('Wrong') }
