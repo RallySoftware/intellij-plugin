@@ -1,6 +1,9 @@
 package com.rallydev.intellij.wsapi.dao
 
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.gson.JsonObject
+import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
@@ -21,7 +24,7 @@ class GenericDao<T extends DomainObject> {
         GetRequest request = new GetRequest(ApiEndpoint.ARTIFACT)
                 .withFetch()
                 .withObjectId(id)
-        fromSingleResponse(RallyClient.getInstance().makeRequest(request).get())
+        fromSingleResponse(RallyClient.getInstance().makeRequest(request))
     }
 
     ResultList<T> find(String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
@@ -33,6 +36,32 @@ class GenericDao<T extends DomainObject> {
     }
 
     ResultList<T> find(QueryBuilder query = null, String order = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+        GetRequest request = buildRequest(pageSize, order, query)
+
+        ApiResponse response = RallyClient.getInstance().makeRequest(request)
+        return new ResultListImpl<T>(domainClass, request, response)
+    }
+
+    ListenableFuture<ResultList<T>> findAsync(FutureCallback<ResultListImpl<T>> callback, String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+        findAsync(callback, null, order, pageSize)
+    }
+
+    ListenableFuture<ResultList<T>> findAsync(FutureCallback<ResultListImpl<T>> callback, QueryBuilder query, int pageSize) {
+        findAsync(callback, query, null, pageSize)
+    }
+
+    ListenableFuture<ResultList<T>> findAsync(FutureCallback<ResultListImpl<T>> callback, QueryBuilder query = null, String order = null, int pageSize = GetRequest.MAX_PAGE_SIZE) {
+        GetRequest request = buildRequest(pageSize, order, query)
+
+        Closure<ResultListImpl<T>> apiCall = {
+            ApiResponse response = RallyClient.getInstance().makeRequest(request)
+            new ResultListImpl<T>(domainClass, request, response)
+        }
+        ListenableFuture<ResultList<T>> future = AsyncService.instance.schedule(apiCall, callback)
+        return future
+    }
+
+    private GetRequest buildRequest(int pageSize, String order, QueryBuilder query) {
         GetRequest request = new GetRequest(ApiEndpoint.DOMAIN_CLASS_ENDPOINTS[domainClass])
                 .withFetch()
                 .withPageSize(pageSize)
@@ -42,9 +71,7 @@ class GenericDao<T extends DomainObject> {
         if (query?.hasConditions()) {
             request.withQuery(query.toString())
         }
-
-        ApiResponse response = RallyClient.getInstance().makeRequest(request).get()
-        return new ResultListImpl<T>(domainClass, request, response)
+        request
     }
 
     private T fromSingleResponse(ApiResponse response) {

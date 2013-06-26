@@ -1,10 +1,27 @@
 package com.rallydev.intellij.wsapi
 
+import com.google.common.util.concurrent.FutureCallback
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.wsapi.domain.Defect
+import spock.util.concurrent.BlockingVariable
 
 //todo: I dislike this spec; it retests QueryBuilder rather than just Search
 class SearchSpec extends BaseContainerSpec {
+
+    BlockingVariable done = new BlockingVariable()
+    FutureCallback<ResultList> callback
+
+    def setup() {
+        callback = new FutureCallback<ResultList>() {
+            @Override
+            void onSuccess(ResultList v) {
+                done.set(true)
+            }
+
+            @Override
+            void onFailure(Throwable throwable) {}
+        }
+    }
 
     def "search builds query and searches from dao"() {
         given:
@@ -13,7 +30,10 @@ class SearchSpec extends BaseContainerSpec {
         )
 
         when:
-        search.doSearch()
+        search.doSearch(callback)
+
+        and:
+        done.get()
 
         then:
         recordingClientRequests
@@ -27,7 +47,10 @@ class SearchSpec extends BaseContainerSpec {
         )
 
         when:
-        search.doSearch()
+        search.doSearch(callback)
+
+        and:
+        done.get()
 
         then:
         recordingClientRequests
@@ -41,7 +64,10 @@ class SearchSpec extends BaseContainerSpec {
         )
 
         when:
-        search.doSearch()
+        search.doSearch(callback)
+
+        and:
+        done.get()
 
         then:
         recordingClientRequests

@@ -1,5 +1,7 @@
 package com.rallydev.intellij.wsapi
 
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.ListenableFuture
 import com.rallydev.intellij.wsapi.dao.GenericDao
 import com.rallydev.intellij.wsapi.domain.Artifact
 
@@ -13,7 +15,7 @@ class Search {
     String project
     Class domainClass
 
-    List<Artifact> doSearch(int pageSize = 30) {
+    ListenableFuture<List> doSearch(FutureCallback<ResultList> callback , int pageSize = 30) {
         QueryBuilder queryBuilder = new QueryBuilder()
 
         if (term) {
@@ -26,7 +28,7 @@ class Search {
         }
 
         GenericDao<Artifact> dao = new GenericDao<>(domainClass)
-        dao.find(queryBuilder, 'LastUpdateDate&dir=DESC', pageSize)
+        dao.findAsync(callback, queryBuilder, 'LastUpdateDate&dir=DESC', pageSize)
     }
 
 }

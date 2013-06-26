@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.FutureCallback
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.util.AsyncService
 import org.apache.commons.httpclient.HttpStatus
+import org.apache.commons.httpclient.auth.InvalidCredentialsException
 import org.apache.commons.httpclient.methods.GetMethod
 import spock.util.concurrent.BlockingVariable
 
@@ -19,11 +20,13 @@ class RallyClientSpec extends BaseContainerSpec {
         client.password == config.password
     }
 
-    def "makeRequests stores password prompt results"() {
+    def "makeRequest stores password prompt results"() {
         given:
+        String password = 'first'
+
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
         client.executeMethod(_) >> { HttpStatus.SC_OK }
-        client.promptForPassword() >> { 'queue' }
+        client.promptForPassword() >> { password }
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
                 getResponseBodyAsString() >> { '{}' }
@@ -37,7 +40,18 @@ class RallyClientSpec extends BaseContainerSpec {
         client.makeRequest(Mock(GetRequest))
 
         then:
-        config.password == 'queue'
+        config.password == password
+
+        when:
+        config.password = null
+        password = 'second'
+        client.promptForPassword() >> { password }
+
+        and:
+        client.makeRequest(Mock(GetRequest), Mock(FutureCallback))
+
+        then:
+        config.password == password
     }
 
     def "makeRequests does not prompt for password when set in config"() {
@@ -50,17 +64,23 @@ class RallyClientSpec extends BaseContainerSpec {
             }
         }
 
-        and:
+        and: 'password is configured'
         config.password = 'monkey'
 
-        when:
+        when: 'making a request synchronously'
         client.makeRequest(Mock(GetRequest))
 
-        then:
+        then: 'user is not prompted for password'
+        0 * client.promptForPassword() >> {}
+
+        when: 'making a request asynchronously'
+        client.makeRequest(Mock(GetRequest), Mock(FutureCallback))
+
+        then: 'user is not prompted for password'
         0 * client.promptForPassword() >> {}
     }
 
-    def "auth failures clear the cached password"() {
+    def "auth failure clears the cached password"() {
         BlockingVariable done = new BlockingVariable()
 
         given:
@@ -72,17 +92,28 @@ class RallyClientSpec extends BaseContainerSpec {
             }
         }
 
-        when:
+        when: 'an async request is made'
         client.makeRequest(Mock(GetRequest), new FutureCallback<ApiResponse>() {
             @Override
-            void onSuccess(ApiResponse v) { }
+            void onSuccess(ApiResponse v) {}
 
             @Override
             void onFailure(Throwable throwable) { done.set(true) }
         })
 
-        then:
+        then: 'the failure callback is called and the password is cleared'
         done.get()
+        !config.password
+
+        when: 'a synchronous request is made'
+        config.password = 'monkey'
+        client.makeRequest(Mock(GetRequest))
+
+        then: 'the password is cleared'
+        !config.password
+
+        and: 'an exception is thrown'
+        thrown(InvalidCredentialsException)
     }
 
 }

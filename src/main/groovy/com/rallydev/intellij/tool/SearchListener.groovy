@@ -1,22 +1,24 @@
 package com.rallydev.intellij.tool
 
+import com.google.common.util.concurrent.FutureCallback
+import com.intellij.openapi.application.ApplicationManager
+import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.ResultList
 import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.domain.Artifact
 
-import javax.swing.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 
-class SearchListener implements ActionListener, Runnable {
-    List<Artifact> results
+class SearchListener implements ActionListener {
     SearchWindowImpl window
     Search search = new Search()
 
     @Override
     void actionPerformed(ActionEvent actionEvent) {
         RallyClient.instance.ensurePasswordLoaded()
-        Thread.start { doActionPerformed() }
+        doActionPerformed()
     }
 
     void doActionPerformed() {
@@ -29,22 +31,30 @@ class SearchListener implements ActionListener, Runnable {
 
         window.startLoadingAnimation()
         window.enableControls(false)
-        try {
-            results = search.doSearch()
-            window.setStatus("Loaded ${results.size()} artifacts")
-        } catch (Exception e) {
-            window.setStatus('Error communicating with Rally')
-        } finally {
-            window.enableControls(true)
-        }
 
-        SwingUtilities.invokeLater(this)
+        search.doSearch(callback)
     }
 
-    void run() {
-        window.clear()
-        results.each {
-            window.addResult(it)
+    FutureCallback<ResultList<Artifact>> getCallback() {
+        new ErrorMessageFutureCallback<ResultList<Artifact>>() {
+            @Override
+            void onSuccess(ResultList<Artifact> results) {
+                window.setStatus("Loaded ${results.size()} artifacts")
+                window.enableControls(true)
+                ApplicationManager.application.invokeLater({
+                    window.clear()
+                    results.each {
+                        window.addResult(it)
+                    }
+                })
+            }
+
+            @Override
+            void onFailure(Throwable throwable) {
+                super.onFailure(throwable)
+                window.setStatus('Error communicating with Rally')
+                window.enableControls(true)
+            }
         }
     }
 

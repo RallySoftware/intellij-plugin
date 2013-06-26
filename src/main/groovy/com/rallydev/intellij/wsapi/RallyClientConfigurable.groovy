@@ -23,7 +23,7 @@ class RallyClientConfigurable extends RallyClient {
     }
 
     @Override
-    protected void ensurePasswordLoaded() {
+    void ensurePasswordLoaded() {
         if (promptForPassword && EventQueue.isDispatchThread()) {
             password = promptForPassword()
         }

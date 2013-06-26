@@ -1,8 +1,8 @@
 package com.rallydev.intellij
 
-import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.mock.MockApplication
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.testFramework.LightPlatformTestCase
@@ -10,6 +10,7 @@ import com.intellij.testFramework.UsefulTestCase
 import com.intellij.util.ui.UIUtil
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.tool.OpenArtifacts
+import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
@@ -32,7 +33,9 @@ abstract class BaseContainerSpec extends Specification {
     List<Project> projects = [new Project(name: 'Project1'), new Project(name: 'Project1')]
 
     def setup() {
-        ApplicationManager.setApplication(new MockApplication(myTestRootDisposable), myTestRootDisposable)
+        //Application application = new MockApplication(myTestRootDisposable), myTestRootDisposable
+        Application application = Spy(MockApplication, constructorArgs: [myTestRootDisposable])
+        ApplicationManager.setApplication(application, myTestRootDisposable)
         picoContainer = ((MutablePicoContainer) ApplicationManager.application.getPicoContainer())
 
         config = Spy(TestConfig)
@@ -44,9 +47,7 @@ abstract class BaseContainerSpec extends Specification {
         recordingClient = Mock(RallyClient)
         recordingClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
             recordingClientRequests << request.getUrl(config.url.toURL())
-            Mock(ListenableFuture) {
-                get() >> new ApiResponse(SpecUtils.minimalResponseJson)
-            }
+            return new ApiResponse(SpecUtils.minimalResponseJson)
         }
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
 
@@ -60,6 +61,7 @@ abstract class BaseContainerSpec extends Specification {
         registerComponentInstance(swingService)
 
         registerComponentImplementation(OpenArtifacts)
+        registerComponentImplementation(AsyncService)
     }
 
     protected registerComponentInstance(Object instance) {
@@ -106,6 +108,12 @@ abstract class BaseContainerSpec extends Specification {
         void setPassword(String password) {
             this.password = password
         }
+
+        @Override
+        void clearCachedPassword() {
+            password = null
+        }
+
     }
 
     protected setupProject() {

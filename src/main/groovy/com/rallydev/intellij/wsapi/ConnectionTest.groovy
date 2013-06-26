@@ -13,7 +13,7 @@ class ConnectionTest {
     }
 
     void doTest() throws Exception {
-        ApiResponse response = client.makeRequest(new GetRequest(ApiEndpoint.WORKSPACE)).get()
+        ApiResponse response = client.makeRequest(new GetRequest(ApiEndpoint.WORKSPACE))
         if (!response?.results) {
             throw new RuntimeException("Incorrect response from server\n${response ?: 'No response'}")
         }

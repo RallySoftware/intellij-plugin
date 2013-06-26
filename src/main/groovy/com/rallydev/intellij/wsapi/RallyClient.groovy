@@ -32,27 +32,36 @@ class RallyClient extends HttpClient {
         return ServiceManager.getService(RallyClient.class)
     }
 
-    ListenableFuture<ApiResponse> makeRequest(@NotNull GetRequest request, @Nullable FutureCallback<ApiResponse> callback = null) {
+    ListenableFuture<ApiResponse> makeRequest(@NotNull GetRequest request, @Nullable FutureCallback<ApiResponse> callback) {
         ensurePasswordLoaded()
         Closure<ApiResponse> requestCall = {
-            state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(getUsername(), getPassword()))
-
-            GetMethod method = buildMethod(request)
-            log.debug "Rally Client requesting [${method.URI}]"
-            int code = executeMethod(method)
-
-            switch (code) {
-                case HttpStatus.SC_OK:
-                    return new ApiResponse(method.responseBodyAsString)
-                case HttpStatus.SC_UNAUTHORIZED:
-                    onAuthError()
-                    throw new InvalidCredentialsException('The provided user name and password are not valid')
-                default:
-                    throw new RuntimeException('Unhandled response code')
-            }
+            doMakeRequest(request)
         }
 
         return asyncService.schedule(requestCall, callback)
+    }
+
+    ApiResponse makeRequest(@NotNull GetRequest request) {
+        ensurePasswordLoaded()
+        doMakeRequest(request)
+    }
+
+    private ApiResponse doMakeRequest(@NotNull GetRequest request) {
+        state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(getUsername(), getPassword()))
+
+        GetMethod method = buildMethod(request)
+        log.debug "Rally Client requesting [${method.URI}]"
+        int code = executeMethod(method)
+
+        switch (code) {
+            case HttpStatus.SC_OK:
+                return new ApiResponse(method.responseBodyAsString)
+            case HttpStatus.SC_UNAUTHORIZED:
+                onAuthError()
+                throw new InvalidCredentialsException('The provided user name and password are not valid')
+            default:
+                throw new RuntimeException('Unhandled response code')
+        }
     }
 
     protected GetMethod buildMethod(GetRequest request) {
@@ -71,7 +80,7 @@ class RallyClient extends HttpClient {
         null
     }
 
-    protected void ensurePasswordLoaded() {
+    void ensurePasswordLoaded() {
         String password = getPassword()
         if (!password) {
             password = promptForPassword()
