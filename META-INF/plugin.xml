@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <name>Rally ALM Tasks Integration</name>
     <description>short description of the plugin</description>
-    <version>1.0</version>
+    <version>0.1</version>
     <vendor>Rally Software</vendor>
 
     <depends>com.intellij.tasks</depends>
@@ -10,7 +10,10 @@
     <idea-version since-build="107.105"/>
 
     <application-components>
-        <!-- Add your application components here -->
+        <component>
+            <implementation-class>com.rallydev.intellij.beta.VersionCheck</implementation-class>
+            <interface-class>com.rallydev.intellij.beta.VersionCheck</interface-class>
+        </component>
     </application-components>
 
     <project-components>

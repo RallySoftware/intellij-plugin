@@ -11,30 +11,15 @@ import com.intellij.openapi.util.AsyncResult
 
 abstract class ErrorMessageFutureCallback<T> implements FutureCallback<T> {
 
-    @Lazy
-    private static final NotificationGroup RALLY_NOTIFICATION = NotificationGroup.balloonGroup("Rally")
-
     @Override
     void onFailure(Throwable throwable) {
         switch (throwable.class) {
             default:
-                showError(
+                IdeNotification.showError(
                         'Error communicating with Rally',
                         "Querying Rally failed; check the  ${throwable.message}"
                 )
         }
-    }
-
-    private void showError(String title, String content) {
-        DataManager.getInstance().getDataContextFromFocus().doWhenDone(new AsyncResult.Handler<DataContext>() {
-            @Override
-            void run(DataContext dataContext) {
-                Project project = DataKeys.PROJECT.getData(dataContext);
-
-                def thing = RALLY_NOTIFICATION.createNotification(title, content, NotificationType.ERROR, null)
-                thing.notify(project)
-            }
-        })
     }
 
 }
