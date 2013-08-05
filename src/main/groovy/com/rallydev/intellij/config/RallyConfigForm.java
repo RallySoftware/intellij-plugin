@@ -9,8 +9,12 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class RallyConfigForm implements SearchableConfigurable {
+
+    private static final String PASSWORD_PLACEHOLDER = "passwordPlaceholderpasswordPlaceholder";
 
     private JPanel configPanel;
 
@@ -23,6 +27,8 @@ public class RallyConfigForm implements SearchableConfigurable {
     private JButton invalidateCachesButton;
 
     private RallyConfig rallyConfig;
+
+    private boolean passwordChanged = false;
 
     public RallyConfigForm() {
         rallyConfig = RallyConfig.getInstance();
@@ -50,6 +56,10 @@ public class RallyConfigForm implements SearchableConfigurable {
         return rememberPassword;
     }
 
+    public boolean getPasswordChanged() {
+        return passwordChanged;
+    }
+
     @Override
     public String getDisplayName() {
         return "Rally";
@@ -75,7 +85,7 @@ public class RallyConfigForm implements SearchableConfigurable {
     public boolean isModified() {
         boolean isModified = !StringUtils.equals(url.getText(), rallyConfig.url);
         isModified = isModified || !StringUtils.equals(userName.getText(), rallyConfig.userName);
-        if (rememberPassword.isSelected()) {
+        if (rememberPassword.isSelected() && passwordChanged) {
             isModified = isModified || !StringUtils.equals(new String(password.getPassword()), rallyConfig.getPassword());
         }
         isModified = isModified || rememberPassword.isSelected() != rallyConfig.rememberPassword;
@@ -90,6 +100,23 @@ public class RallyConfigForm implements SearchableConfigurable {
 
         testConnectionButton.addActionListener(new TestConnectionButtonListener(this));
         invalidateCachesButton.addActionListener(new InvalidateCachesActionListener());
+        password.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent documentEvent) {
+                onChange();
+            }
+
+            public void removeUpdate(DocumentEvent documentEvent) {
+                onChange();
+            }
+
+            public void changedUpdate(DocumentEvent documentEvent) {
+                onChange();
+            }
+
+            private void onChange() {
+                passwordChanged = true;
+            }
+        });
 
         return configPanel;
     }
@@ -100,9 +127,10 @@ public class RallyConfigForm implements SearchableConfigurable {
         rememberPassword.setSelected(rallyConfig.rememberPassword);
 
         togglePassword();
-        if(rallyConfig.rememberPassword) {
-            password.setText(rallyConfig.getPassword());
+        if (rallyConfig.rememberPassword) {
+            password.setText(PASSWORD_PLACEHOLDER);
         }
+        passwordChanged = false;
     }
 
     public void togglePassword() {

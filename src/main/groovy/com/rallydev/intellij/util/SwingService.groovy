@@ -11,14 +11,14 @@ class SwingService {
         return ServiceManager.getService(SwingService.class)
     }
 
-    void doInUiThread(Closure change) {
+    void doInUiThread(Closure later) {
         if (ApplicationManager.getApplication().isDispatchThread()) {
-            change()
+            later()
         } else {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 void run() {
-                    change()
+                    later()
                 }
             })
         }

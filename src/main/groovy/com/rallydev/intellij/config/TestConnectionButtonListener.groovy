@@ -20,12 +20,18 @@ class TestConnectionButtonListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
+        String password
+        if (form.rememberPassword.isSelected() && !form.passwordChanged) {
+            password = RallyConfig.getInstance().getPassword()
+        } else {
+            password = form.password.password as String
+        }
+
         String error = null
         try {
             new ConnectionTest(
                     form.url.getText().toURL(), form.userName.text,
-                    form.password.password as String,
-                    !form.rememberPassword.selected
+                    password, !form.rememberPassword.selected
             ).doTest()
         } catch (Exception e) {
             error = messageFromException(e)

@@ -85,18 +85,18 @@ public class RallyConfig implements PersistentStateComponent<Element> {
             String storedPassword = getStoredPassword();
             if (storedPassword != null) {
                 password = storedPassword;
+                // Store password in memory
+                try {
+                    passwordSafe.getMemoryProvider().storePassword(getProject(),
+                            RallyConfig.class, RALLY_CONFIG_PASSWORD_KEY, password);
+                } catch (PasswordSafeException e) {
+                    log.info("Couldn't store password for key [" + RALLY_CONFIG_PASSWORD_KEY + "]", e);
+                }
             }
         } catch (PasswordSafeException e) {
             log.info("Couldn't get password for key [" + RALLY_CONFIG_PASSWORD_KEY + "]", e);
             masterPasswordRefused = true;
             password = "";
-        }
-        // Store password in memory
-        try {
-            passwordSafe.getMemoryProvider().storePassword(getProject(),
-                    RallyConfig.class, RALLY_CONFIG_PASSWORD_KEY, password != null ? password : "");
-        } catch (PasswordSafeException e) {
-            log.info("Couldn't store password for key [" + RALLY_CONFIG_PASSWORD_KEY + "]", e);
         }
         passwordChanged = false;
         return password != null ? password : "";

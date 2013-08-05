@@ -15,7 +15,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         then:
         form.url.text == config.url
         form.userName.text == config.userName
-        form.password.text == config.password
+        form.password.text == RallyConfigForm.PASSWORD_PLACEHOLDER
         form.rememberPassword.selected == config.rememberPassword
     }
 
@@ -90,8 +90,10 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         then:
         form.url.text == config.url
         form.userName.text == config.userName
-        form.password.text == config.password
         form.rememberPassword.selected == config.rememberPassword
+
+        form.password.text == RallyConfigForm.PASSWORD_PLACEHOLDER
+        !form.passwordChanged
     }
 
     def "Configed password is cleared when applying without remember"() {
