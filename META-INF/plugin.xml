@@ -4,6 +4,7 @@
     <version>0.2</version>
     <vendor>Rally Software</vendor>
 
+    <id>rally-intellij</id>
     <depends>com.intellij.tasks</depends>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
