@@ -5,6 +5,9 @@ for Rally ALM.
 
 This software is released under the [MIT License](license.txt).
 
+### Installation and Use
+Visit http://rallysoftware.github.io/intellij-plugin for beta builds and instructions.
+
 ### Development
 
 Development requires the most recent version of IntelliJ IDEA and a Gradle installation. Gradle manages
