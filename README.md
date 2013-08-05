@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/RallySoftware/intellij-plugin.png)](https://waffle.io/RallySoftware/intellij-plugin)  
 ### Rally plugin for Intellij
 
 Implements Intellij's [task and contexts api](http://www.jetbrains.com/idea/webhelp/managing-tasks-and-context.html)
