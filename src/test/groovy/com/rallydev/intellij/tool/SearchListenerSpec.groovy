@@ -57,7 +57,7 @@ class SearchListenerSpec extends BaseContainerSpec {
 
         then:
         1 * window.enableControls(false)
-        1 * window.startLoadingAnimation()
+        1 * window.showLoadingAnimation()
 
         then:
         1 * window.enableControls(true)

@@ -18,10 +18,11 @@ class SearchListener implements ActionListener {
     @Override
     void actionPerformed(ActionEvent actionEvent) {
         RallyClient.instance.ensurePasswordLoaded()
-        doActionPerformed()
+        Thread.start { doActionPerformed() }
     }
 
     void doActionPerformed() {
+        window.showLoadingAnimation()
         search.with {
             term = window.searchTerm
             searchAttributes = window.searchAttributes
@@ -29,7 +30,6 @@ class SearchListener implements ActionListener {
             project = window.selectedProject
         }
 
-        window.startLoadingAnimation()
         window.enableControls(false)
 
         search.doSearch(callback)
