@@ -1,48 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <style type="text/css">
         body {
-            font-family: 'Open Sans'
+            font-family: 'Open Sans', sans-serif;
         }
     </style>
 </head>
 <body>
 
-<h2>Rally ALM Tasks Integration</h2>
+<h2>Rally ALM Integration</h2>
 
-<dl>
-    <dt>Version 0.1</dt>
-    <dd><a href="rally-intellij-plugin.zip">rally-intellij-plugin.zip</a></dd>
-</dl>
+<h3>Important Note for <span style="color: red">0.1 Users</span></h3>
+
+<p>
+    The installation instructions have changed. Changes will come down automatically per the plugin update system, rather manually installing from
+    disk. Uninstall your 0.1 install and pull down the plugin from a custom repository, per instructions below.
+</p>
 
 <h3>Instructions</h3>
 <ul>
-    <li>Install at Preferences -> Plugins -> "Install Plugin from Disk"</li>
+    <li>
+        Add a custom plugin repository, per the
+        <a href="http://www.jetbrains.com/idea/webhelp/managing-enterprise-plugin-repositories.html">instructions provided by Jetbrains</a>
+        <ul>
+            <li>
+                Configure the repository url to:<br/>
+                <a href="http://rallysoftware.github.io/intellij-plugin/updatePlugins.xml">http://rallysoftware.github.io/intellij-plugin/updatePlugins.xml</a>
+            </li>
+        </ul>
+    </li>
+    <li>Click "Browse Repositories" and add the the rally-intellij plugin</li>
     <li>Restart IntelliJ</li>
     <li>Configure Preferences -> Rally</li>
 </ul>
 
+<h3>Issues</h3>
+
 <p>
-Misconfiguring the Rally section or failing to configure it before use might result in undesirable behavior, as not all exception conditions are well handled.
+    <strong>Note:</strong> Mis-configuring the Rally section or failing to configure it before use might result in undesirable behavior, as not all
+    exception conditions are
+    well handled.
 </p>
 
-<h3>Known limitations</h3>
-<ul>
-    <li>
-        I block the ui-thread on the first time clicking into the 'Rally Search' window on the bottom to cache the initial set of projects. This takes almost a minute to load.
-    </li>
-    <li>
-        If 'Rally Search' throws an exception any reason first opening the window, the IDE needs restarting for it to try again. Possible ways to cause an exception include an auth failure or a misconfigured Rally url.
-    </li>
-    <li>
-        The html rendering on an artifact's description and notes isn't perfect; it gets confused by complicated markup.
-    </li>
-    <li>
-        Images embedded in a description don't display
-    </li>
-</ul>
+Please visit the
+<a href="https://github.com/RallySoftware/intellij-plugin/issues">Github issues page</a>
+for a list of known limitations and defects or to submit defects.
+
+<h3>Changelog</h3>
+
+<dl>
+    <dt><strong>0.2</strong></dt>
+    <dd>
+        <ul>
+            <li>
+                Fixed <a href="https://github.com/RallySoftware/intellij-plugin/issues/1">Issue 1</a> - exceptions entering auth page.
+            </li>
+            <li>
+                Changed installation instructions to custom plugin repository.
+            </li>
+        </ul>
+    </dd>
+
+    <dt><strong>0.1</strong></dt>
+    <dd>
+        <ul>
+            <li>Initial Release</li>
+        </ul>
+    </dd>
+</dl>
 
 </body>
 </html>
