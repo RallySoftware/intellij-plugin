@@ -34,8 +34,8 @@ class VersionCheck implements ApplicationComponent {
                 IdeNotification.showWarning(
                         "${plugin.name} is out of date", """
 Dear beta tester,
-The ${plugin.name} plugin is still under very active development and your installed version is out of date.
-Please visit <a href="${PAGES_URL}">${PAGES_URL}</a> to download the current version.
+The ${plugin.name} plugin is still under active development and your installed version is out of date.
+Please run 'IntelliJ IDEA' -> 'Check for Updates' and install the new version.
 """
                 )
             }
