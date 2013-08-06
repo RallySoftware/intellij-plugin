@@ -6,6 +6,7 @@ import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.content.ContentManager
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Requirement
@@ -38,6 +39,9 @@ class SearchWindowImplSpec extends BaseContainerSpec {
 
     def "setupWindow populates choices"() {
         given:
+        ProjectCacheService.instance.getIsPrimed() >> true
+
+        and:
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         searchWindow.setupWindow()
 
@@ -48,6 +52,33 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.projectChoices.getItemAt(0).toString() == ''
         searchWindow.projectChoices.getItemAt(1).toString() == projects[0].name
         searchWindow.projectChoices.getItemAt(2).toString() == projects[1].name
+    }
+
+    def "setupWindow populates choices asynchronously when cache not primed"() {
+        given:
+        ProjectCacheService.instance.getIsPrimed() >> false
+
+        and:
+        SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
+
+        when:
+        searchWindow.setupWindow()
+
+        then:
+        1 * searchWindow.showLoadingAnimation(_) >> {}
+        1 * searchWindow.setStatus(_) >> {}
+        2 * searchWindow.toggleInteractiveComponents(_ as Boolean) >> {}
+
+        and:
+        searchWindow.projectChoices.size() == projects.size() + 1
+
+        and:
+        searchWindow.projectChoices.getItemAt(0).toString() == ''
+        searchWindow.projectChoices.getItemAt(1).toString() == projects[0].name
+        searchWindow.projectChoices.getItemAt(2).toString() == projects[1].name
+
+        and:
+        searchWindow.searchBox.enabled
     }
 
     def "handleTableClick adds artifact open artifact"() {

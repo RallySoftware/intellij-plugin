@@ -20,7 +20,7 @@ public class ProjectCache implements PersistentStateComponent<ProjectCache> {
 
     public Workspace workspace;
     public List<Project> projects = new LinkedList<Project>();
-    public Date loaded;
+    public Date loadedOn;
 
     @Nullable
     @Override

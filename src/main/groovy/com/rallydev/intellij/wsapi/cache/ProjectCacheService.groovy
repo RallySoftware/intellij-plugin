@@ -23,12 +23,18 @@ class ProjectCacheService {
         return ServiceManager.getService(ProjectCacheService.class)
     }
 
+    boolean getIsPrimed() {
+        projectCache.projects != null &&
+                projectCache.loadedOn != null &&
+                (projectCache.loadedOn + 1) > new Date()
+    }
+
     List<Project> getCachedProjects() {
-        if (reload()) {
+        if (!isPrimed) {
             projectCache.with {
                 projects = projectDao.find('Name')
                 projects.loadAllPages()
-                loaded = new Date()
+                loadedOn = new Date()
                 workspace = new Workspace(name: 'hello')
             }
         }
@@ -38,15 +44,9 @@ class ProjectCacheService {
     void clear() {
         projectCache.with {
             projects = null
-            loaded = null
+            loadedOn = null
             workspace = null
         }
-    }
-
-    private boolean reload() {
-        projectCache.projects == null ||
-                projectCache.loaded == null ||
-                (projectCache.loaded + 1) <= new Date()
     }
 
 }

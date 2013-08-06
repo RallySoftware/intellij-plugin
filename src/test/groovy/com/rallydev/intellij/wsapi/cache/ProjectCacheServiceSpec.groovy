@@ -10,6 +10,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
 
     def setup() {
         registerComponentImplementation(ProjectCache)
+        registerComponentImplementation(ProjectCacheService)
     }
 
     def "DI is correctly setup"() {
@@ -53,6 +54,41 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         1 * cache.projectDao.find('Name') >> { new ResultListMock() }
     }
 
+    def "primed returns correct value based on cached"() {
+        given:
+        ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
+        cache.projectDao = Mock(GenericDao, constructorArgs: [Project])
+        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
+
+        expect:
+        !cache.isPrimed
+
+        when:
+        cache.cachedProjects
+
+        then:
+        cache.isPrimed
+    }
+
+    def "primed returns false when date expired"() {
+        given:
+        ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
+        cache.projectDao = Mock(GenericDao, constructorArgs: [Project])
+        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
+
+        when:
+        cache.cachedProjects
+
+        then:
+        cache.isPrimed
+
+        when:
+        cache.projectCache.loadedOn = new Date() - 1
+
+        then:
+        !cache.isPrimed
+    }
+
     def "cached value expires after a day"() {
         given:
         ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
@@ -67,7 +103,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         1 * cache.projectDao.find('Name') >> { new ResultListMock() }
 
         when:
-        cache.projectCache.loaded = new Date() - 1
+        cache.projectCache.loadedOn = new Date() - 1
 
         and:
         cache.cachedProjects

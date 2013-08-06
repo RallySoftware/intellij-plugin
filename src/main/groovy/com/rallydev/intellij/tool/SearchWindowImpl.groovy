@@ -1,12 +1,16 @@
 package com.rallydev.intellij.tool
 
+import com.google.common.util.concurrent.FutureCallback
 import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.intellij.util.ui.AsyncProcessIcon
+import com.rallydev.intellij.util.AsyncService
+import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
@@ -21,6 +25,7 @@ import java.awt.event.MouseEvent
 
 //todo: store checkbox state
 class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
+    static final Logger log = Logger.getInstance(SearchWindowImpl)
 
     ToolWindow myToolWindow
     Map<String, Artifact> searchResults = new HashMap<>()
@@ -36,25 +41,18 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     void setupWindow() {
         setupTypeChoices()
-        setupProjectChoices()
         setupTable()
         installSearchListener()
+        setupProjectChoices()
     }
 
-    void setupTypeChoices() {
+    private void setupTypeChoices() {
         typeChoices.setModel(new DefaultComboBoxModel(
                 ['', 'Defect', 'Requirement'].toArray()
         ))
     }
 
-    void setupProjectChoices() {
-        projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
-        ServiceManager.getService(ProjectCacheService.class).cachedProjects.each {
-            projectChoices.addItem(new ProjectItem(project: it))
-        }
-    }
-
-    void setupTable() {
+    private void setupTable() {
         DefaultTableModel model = new DefaultTableModel() {
             @Override
             boolean isCellEditable(int row, int column) {
@@ -77,13 +75,47 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         model.addColumn('Project')
     }
 
-    void installSearchListener() {
+    private void installSearchListener() {
         searchButton.addActionListener(new SearchListener(window: this))
-        // ?. for test - explore IntelliJ test framework to better handle
+        //todo: ?. for test - explore IntelliJ test framework to better handle
         searchPane.rootPane?.setDefaultButton(searchButton)
     }
 
-    void handleTableClick(MouseEvent mouseEvent) {
+    private void setupProjectChoices() {
+        if (ProjectCacheService.instance.isPrimed) {
+            projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
+            ProjectCacheService.instance.cachedProjects.each {
+                projectChoices.addItem(new ProjectItem(project: it))
+            }
+        } else {
+            loadProjectChoices()
+        }
+    }
+
+    private void loadProjectChoices() {
+        showLoadingAnimation('Loading project list...')
+        toggleInteractiveComponents(false)
+
+        Closure<List<Project>> call = {
+            return ProjectCacheService.instance.cachedProjects
+        }
+        FutureCallback<List<Project>> callback = new ErrorMessageFutureCallback<List<Project>>() {
+            void onSuccess(List<Project> projects) {
+                SwingService.instance.queueForUiThread {
+                    projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
+                    projects.each {
+                        projectChoices.addItem(new ProjectItem(project: it))
+                    }
+                    toggleInteractiveComponents(true)
+                    setStatus('Loaded project list')
+                }
+            }
+        }
+
+        AsyncService.instance.schedule(call, callback)
+    }
+
+    private void handleTableClick(MouseEvent mouseEvent) {
         if (mouseEvent.clickCount == 2) {
             Artifact artifact = searchResults[(String) resultsTable.getValueAt(resultsTable.selectedRow, 0)]
             toolWindowManager.getToolWindow("Rally Artifacts").activate(null)
@@ -121,11 +153,11 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         }
     }
 
-    void showLoadingAnimation() {
+    void showLoadingAnimation(String text = "Loading...") {
         SwingService.instance.doInUiThread {
             statusPanel.removeAll()
             statusPanel.add(new AsyncProcessIcon("loading"))
-            statusPanel.add(new JLabel("Loading..."))
+            statusPanel.add(new JLabel(text))
             statusPanel.revalidate()
             statusPanel.repaint()
         }
@@ -139,6 +171,15 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                 return Requirement
             default:
                 return Artifact
+        }
+    }
+
+    void toggleInteractiveComponents(Boolean enabled) {
+        [
+                searchBox, typeChoices, projectChoices, formattedIDCheckBox, nameCheckBox,
+                descriptionCheckBox, searchButton, resultsTable, statusPanel
+        ].each { JComponent component ->
+            component.enabled = enabled
         }
     }
 

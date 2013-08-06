@@ -15,13 +15,18 @@ class SwingService {
         if (ApplicationManager.getApplication().isDispatchThread()) {
             later()
         } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                void run() {
-                    later()
-                }
-            })
+            queueForUiThread(later)
         }
+    }
+
+    void queueForUiThread(Closure later) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            void run() {
+                later()
+            }
+        })
+
     }
 
 }

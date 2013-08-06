@@ -1,5 +1,6 @@
 package com.rallydev.intellij
 
+import com.google.common.util.concurrent.FutureCallback
 import com.intellij.mock.MockApplication
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
@@ -51,17 +52,33 @@ abstract class BaseContainerSpec extends Specification {
         }
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
 
-        registerComponentInstance(new ProjectCache(loaded: new Date(), projects: projects))
-        registerComponentImplementation(ProjectCacheService)
+        ProjectCache projectCache = new ProjectCache(loadedOn: new Date(), projects: projects)
+        registerComponentInstance(projectCache)
+
+        ProjectCacheService projectCacheService = Spy(ProjectCacheService, constructorArgs: [recordingClient, projectCache])
+        projectCacheService.getCachedProjects() >> { projects }
+        registerComponentInstance(ProjectCacheService.name, projectCacheService)
 
         SwingService swingService = new SwingService()
-        swingService.metaClass.doInUiThread = { Closure change ->
-            change()
+        swingService.metaClass.doInUiThread = { Closure closure ->
+            closure()
+        }
+        swingService.metaClass.queueForUiThread = { Closure closure ->
+            closure()
         }
         registerComponentInstance(swingService)
 
+        AsyncService asyncService = new AsyncService()
+        asyncService.metaClass.schedule = { Closure callable, FutureCallback callback ->
+            println 'Did mock implementation'
+            def result = callable()
+            if(callback) {
+                callback.onSuccess(result)
+            }
+        }
+        registerComponentInstance(AsyncService.name, asyncService)
+
         registerComponentImplementation(OpenArtifacts)
-        registerComponentImplementation(AsyncService)
     }
 
     protected registerComponentInstance(Object instance) {
