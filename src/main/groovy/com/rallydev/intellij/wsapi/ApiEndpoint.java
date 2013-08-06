@@ -4,6 +4,7 @@ import com.rallydev.intellij.wsapi.domain.Artifact;
 import com.rallydev.intellij.wsapi.domain.Defect;
 import com.rallydev.intellij.wsapi.domain.Project;
 import com.rallydev.intellij.wsapi.domain.Requirement;
+import com.rallydev.intellij.wsapi.domain.Task;
 import com.rallydev.intellij.wsapi.domain.Workspace;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 //Written in Java due to http://jira.codehaus.org/browse/GROOVY-5212
 public enum ApiEndpoint {
-    ARTIFACT, DEFECT, HIERARCHICAL_REQUIREMENT, PROJECT, WORKSPACE;
+    ARTIFACT, DEFECT, HIERARCHICAL_REQUIREMENT, PROJECT, TASK, WORKSPACE;
 
     public static final Map<Class, ApiEndpoint> DOMAIN_CLASS_ENDPOINTS = new HashMap<Class, ApiEndpoint>();
 
@@ -20,12 +21,14 @@ public enum ApiEndpoint {
         DOMAIN_CLASS_ENDPOINTS.put(Defect.class, DEFECT);
         DOMAIN_CLASS_ENDPOINTS.put(Requirement.class, HIERARCHICAL_REQUIREMENT);
         DOMAIN_CLASS_ENDPOINTS.put(Project.class, PROJECT);
+        DOMAIN_CLASS_ENDPOINTS.put(Task.class, TASK);
         DOMAIN_CLASS_ENDPOINTS.put(Workspace.class, WORKSPACE);
     }
 
     public static ApiEndpoint fromType(String type) {
         if (Defect.getTYPE().equals(type)) return DEFECT;
         if (Requirement.getTYPE().equals(type)) return HIERARCHICAL_REQUIREMENT;
+        if (Task.getTYPE().equals(type)) return TASK;
         return null;
     }
 

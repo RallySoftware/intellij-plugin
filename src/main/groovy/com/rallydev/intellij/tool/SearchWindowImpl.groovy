@@ -17,6 +17,7 @@ import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.Requirement
+import com.rallydev.intellij.wsapi.domain.Task
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
@@ -48,7 +49,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     private void setupTypeChoices() {
         typeChoices.setModel(new DefaultComboBoxModel(
-                ['', 'Defect', 'Requirement'].toArray()
+                ['', 'Defect', 'Task', 'Requirement'].toArray()
         ))
     }
 
@@ -169,6 +170,8 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                 return Defect
             case 'Requirement':
                 return Requirement
+            case 'Task':
+                return Task
             default:
                 return Artifact
         }

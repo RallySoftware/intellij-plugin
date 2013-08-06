@@ -10,6 +10,7 @@ import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Requirement
+import com.rallydev.intellij.wsapi.domain.Task
 
 import javax.swing.table.DefaultTableModel
 import java.awt.event.MouseEvent
@@ -135,6 +136,12 @@ class SearchWindowImplSpec extends BaseContainerSpec {
 
         then:
         searchWindow.selectedType == Requirement
+
+        when:
+        searchWindow.typeChoices.setSelectedItem 'Task'
+
+        then:
+        searchWindow.selectedType == Task
     }
 
     def "results table is not editable"() {
