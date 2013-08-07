@@ -83,7 +83,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         cache.isPrimed
 
         when:
-        cache.projectCache.loadedOn = new Date() - 1
+        cache.cache.loadedOn = new Date() - 1
 
         then:
         !cache.isPrimed
@@ -103,7 +103,7 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         1 * cache.projectDao.find('Name') >> { new ResultListMock() }
 
         when:
-        cache.projectCache.loadedOn = new Date() - 1
+        cache.cache.loadedOn = new Date() - 1
 
         and:
         cache.cachedProjects

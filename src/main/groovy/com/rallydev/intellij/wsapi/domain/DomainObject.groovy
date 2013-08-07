@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi.domain
 
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.intellij.openapi.diagnostic.Logger
 import com.rallydev.intellij.wsapi.ApiEndpoint
@@ -17,7 +18,6 @@ abstract class DomainObject {
     Date creationDate
     String _ref
 
-    //todo: remove? Needed?
     JsonObject raw
 
     List<String> getExcludedProperties() {
@@ -33,18 +33,22 @@ abstract class DomainObject {
 
         assignableProperties.each { MetaProperty property ->
             if (raw[property.name.capitalize()]) {
-                switch (property.type) {
-                    case Date:
-                        property.setProperty(this, parseWsapiDate((String) raw[property.name.capitalize()].value))
-                        break
-                    case String:
-                    case Number:
-                        property.setProperty(this, raw[property.name.capitalize()].value)
-                        break
-                    default:
-                        log.debug("Property has class non-primitive/date class [${property}]")
-                }
+                assignProperty(property, (JsonElement) raw[property.name.capitalize()])
             }
+        }
+    }
+
+    protected void assignProperty(MetaProperty property, JsonElement json) {
+        switch (property.type) {
+            case Date:
+                property.setProperty(this, parseWsapiDate((String) json['value']))
+                break
+            case String:
+            case Number:
+                property.setProperty(this, json['value'])
+                break
+            default:
+                log.debug("Property has class non-primitive/date class [${property}]")
         }
     }
 

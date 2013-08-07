@@ -5,12 +5,13 @@ import org.apache.commons.httpclient.util.URIUtil
 
 @AutoClone
 class GetRequest {
-    static final String WSAPI_VERSION = '1.39'
+    static final String WSAPI_VERSION = '1.43'
     static int MAX_PAGE_SIZE = 200
     static int MIN_PAGE_SIZE = 1
 
     ApiEndpoint wsapiObject
     String objectId
+    String attribute
 
     Map<String, String> params = [:]
     Integer startIndex = 1
@@ -20,11 +21,11 @@ class GetRequest {
     }
 
     String getUrl(URL server) {
-        "${baseUrl(server)}/${endPoint}.js${queryString}"
+        "${baseUrl(server)}/${endPoint}${queryString}"
     }
 
     String getEncodedUrl(URL server) {
-        "${baseUrl(server)}/${endPoint}.js${URIUtil.encodeQuery(queryString)}"
+        "${baseUrl(server)}/${endPoint}${URIUtil.encodeQuery(queryString)}"
     }
 
     private String getQueryString() {
@@ -33,7 +34,12 @@ class GetRequest {
     }
 
     private String getEndPoint() {
-        return objectId ? "${wsapiObject}/${objectId}" : "${wsapiObject}"
+        String endPoint = "${wsapiObject}"
+        endPoint += objectId ? "/${objectId}" : ''
+        endPoint += ".js"
+        endPoint += attribute ? "/${attribute}" : ''
+
+        endPoint
     }
 
     GetRequest withFetch() {

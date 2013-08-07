@@ -12,15 +12,20 @@ import com.intellij.util.ui.AsyncProcessIcon
 import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
+import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
+import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.Requirement
 import com.rallydev.intellij.wsapi.domain.Task
+import com.rallydev.intellij.wsapi.domain.TypeDefinition
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
@@ -41,16 +46,21 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void setupWindow() {
-        setupTypeChoices()
         setupTable()
         installSearchListener()
+        setupTypeChoices()
         setupProjectChoices()
-    }
 
-    private void setupTypeChoices() {
-        typeChoices.setModel(new DefaultComboBoxModel(
-                ['', 'Defect', 'Task', 'Requirement'].toArray()
-        ))
+        //todo: temp, remove before (merge)
+        button1.addActionListener(
+                new ActionListener() {
+                    @Override
+                    void actionPerformed(ActionEvent actionEvent) {
+                        TypeDefinition typedef = TypeDefinitionCacheService.instance.getTypeDefinition('HierarchicalRequirement')
+                        typedef
+                    }
+                }
+        )
     }
 
     private void setupTable() {
@@ -81,6 +91,64 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         //todo: ?. for test - explore IntelliJ test framework to better handle
         searchPane.rootPane?.setDefaultButton(searchButton)
     }
+
+    private void setupLabels() {
+        //todo: changes isPrimed & toggleInteractiveComponents in loadProjectChoices() to check all async callbacks
+        Closure<TypeDefinition> call = {
+            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.HIERARCHICAL_REQUIREMENT.typeDefinitionElementName)
+        }
+
+        FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
+            void onSuccess(TypeDefinition typeDefinition) {
+                SwingService.instance.queueForUiThread {
+                    log.info "Project typedef display name: ${typeDefinition.displayName}"
+                    projectLabel.setText(typeDefinition.displayName)
+                }
+            }
+        }
+
+        AsyncService.instance.schedule(call, callback)
+    }
+
+    private void setupTypeChoices() {
+        //todo: some kind of sorting on for list
+        typeChoices.setModel(new DefaultComboBoxModel(
+                [''].toArray()
+        ))
+
+        FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
+            void onSuccess(TypeDefinition typeDefinition) {
+                SwingService.instance.queueForUiThread {
+//                    int position = 1
+//                    for(int i=position; i<typeChoices.itemCount; ++i) {
+//                        if(typeChoices.getItemAt(i).toLowerCase() < typeDefinition.displayName.toLowerCase()) {
+//                            position = i
+//                        } else {
+//                            break;
+//                        }
+//                    }
+//                    typeChoices.insertItemAt(typeDefinition.displayName, position)
+                    typeChoices.addItem typeDefinition.displayName
+                }
+            }
+        }
+
+        Closure<TypeDefinition> call = {
+            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.HIERARCHICAL_REQUIREMENT.typeDefinitionElementName)
+        }
+        AsyncService.instance.schedule(call, callback)
+
+        call = {
+            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.DEFECT.typeDefinitionElementName)
+        }
+        AsyncService.instance.schedule(call, callback)
+
+        call = {
+            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.TASK.typeDefinitionElementName)
+        }
+        AsyncService.instance.schedule(call, callback)
+    }
+
 
     private void setupProjectChoices() {
         if (ProjectCacheService.instance.isPrimed) {
