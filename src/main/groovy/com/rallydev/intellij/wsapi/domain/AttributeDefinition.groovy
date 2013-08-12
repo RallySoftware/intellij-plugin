@@ -9,8 +9,7 @@ class AttributeDefinition extends Artifact {
 
     String state
     String _type = TYPE
-    List<String> allowedValues
-
+    List<String> allowedValues = new LinkedList<String>()
 
     @Override
     ApiEndpoint getApiEndpoint() {
@@ -21,7 +20,6 @@ class AttributeDefinition extends Artifact {
     protected void assignProperty(MetaProperty property, JsonElement json) {
         if(property.name == 'allowedValues') {
             JsonArray jsonArray = (JsonArray) json
-            allowedValues = []
             jsonArray.each {
                 allowedValues << it['StringValue']['value']
             }

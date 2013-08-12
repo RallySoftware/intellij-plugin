@@ -24,7 +24,6 @@ class RallyClient {
     private static final Logger log = Logger.getInstance(RallyClient)
 
     AsyncService asyncService
-//    @Delegate
     HttpClient httpClient
 
     RallyClient(AsyncService asyncService) {

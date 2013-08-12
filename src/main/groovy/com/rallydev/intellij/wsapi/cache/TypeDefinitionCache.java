@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @State(
-        name = "Rally Project Cache",
+        name = "Rally Type Definition Cache",
         storages = @Storage(file = "$APP_CONFIG$/rally_type_definition_cache.xml")
 )
 public class TypeDefinitionCache implements PersistentStateComponent<TypeDefinitionCache> {
@@ -29,6 +29,8 @@ public class TypeDefinitionCache implements PersistentStateComponent<TypeDefinit
 
     @Override
     public void loadState(TypeDefinitionCache state) {
+        typeDefinitions = new HashMap<String, TypeDefinition>();
+        attributeDefinitions = new HashMap<String, List<AttributeDefinition>>();
         XmlSerializerUtil.copyBean(state, this);
     }
 

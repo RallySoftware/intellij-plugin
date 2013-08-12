@@ -22,7 +22,4 @@ public class SearchWindow {
     protected JTable resultsTable;
     protected JPanel statusPanel;
 
-    //todo: temp, delete before merge (also from form)
-    protected JButton button1;
-
 }

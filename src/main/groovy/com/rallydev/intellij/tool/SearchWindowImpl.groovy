@@ -12,22 +12,23 @@ import com.intellij.util.ui.AsyncProcessIcon
 import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
-import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
-import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Project
-import com.rallydev.intellij.wsapi.domain.Requirement
-import com.rallydev.intellij.wsapi.domain.Task
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+
+import static com.rallydev.intellij.wsapi.ApiEndpoint.DEFECT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.TASK
 
 //todo: store checkbox state
 class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
@@ -35,6 +36,8 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     ToolWindow myToolWindow
     Map<String, Artifact> searchResults = new HashMap<>()
+    ConcurrentMap<String, Boolean> asynchronousLoadStates = new ConcurrentHashMap<>()
+    ConcurrentMap<String, Class> typeChoicesToDomainClass = new ConcurrentHashMap<>()
     com.intellij.openapi.project.Project project
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
@@ -48,19 +51,16 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     void setupWindow() {
         setupTable()
         installSearchListener()
+
+        toggleInteractiveComponents(false)
+        showLoadingAnimation('Loading Rally configuration...')
+        asynchronousLoadStates['setup'] = false
+
         setupTypeChoices()
+        setupLabels()
         setupProjectChoices()
 
-        //todo: temp, remove before (merge)
-        button1.addActionListener(
-                new ActionListener() {
-                    @Override
-                    void actionPerformed(ActionEvent actionEvent) {
-                        TypeDefinition typedef = TypeDefinitionCacheService.instance.getTypeDefinition('HierarchicalRequirement')
-                        typedef
-                    }
-                }
-        )
+        flagAsynchronousLoadCompleted('setup')
     }
 
     private void setupTable() {
@@ -93,9 +93,9 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     private void setupLabels() {
-        //todo: changes isPrimed & toggleInteractiveComponents in loadProjectChoices() to check all async callbacks
+        asynchronousLoadStates['labels'] = false
         Closure<TypeDefinition> call = {
-            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.HIERARCHICAL_REQUIREMENT.typeDefinitionElementName)
+            TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName)
         }
 
         FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
@@ -104,6 +104,12 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                     log.info "Project typedef display name: ${typeDefinition.displayName}"
                     projectLabel.setText(typeDefinition.displayName)
                 }
+
+                flagAsynchronousLoadCompleted('labels')
+            }
+            void onFailure(Throwable error) {
+                super.onFailure(error)
+                flagAsynchronousLoadCompleted('labels')
             }
         }
 
@@ -111,44 +117,31 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     private void setupTypeChoices() {
-        //todo: some kind of sorting on for list
-        typeChoices.setModel(new DefaultComboBoxModel(
-                [''].toArray()
-        ))
+        typeChoices.setModel(new DefaultComboBoxModel([''].toArray()))
 
-        FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
-            void onSuccess(TypeDefinition typeDefinition) {
-                SwingService.instance.queueForUiThread {
-//                    int position = 1
-//                    for(int i=position; i<typeChoices.itemCount; ++i) {
-//                        if(typeChoices.getItemAt(i).toLowerCase() < typeDefinition.displayName.toLowerCase()) {
-//                            position = i
-//                        } else {
-//                            break;
-//                        }
-//                    }
-//                    typeChoices.insertItemAt(typeDefinition.displayName, position)
-                    typeChoices.addItem typeDefinition.displayName
+        [DEFECT, TASK, HIERARCHICAL_REQUIREMENT].each { endpoint ->
+            asynchronousLoadStates["typeChoice_${endpoint}"] = false
+            FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
+                void onSuccess(TypeDefinition typeDefinition) {
+                    SwingService.instance.queueForUiThread {
+                        asynchronousLoadStates["typeChoice_${endpoint}"] = true
+                        typeChoicesToDomainClass[typeDefinition.displayName] = endpoint.domainClass
+                        SwingService.instance.insertChoiceAlphabetically(typeDefinition.displayName, typeChoices)
+                    }
+
+                    flagAsynchronousLoadCompleted("typeChoice_${endpoint}")
+                }
+                void onFailure(Throwable error) {
+                    super.onFailure(error)
+                    flagAsynchronousLoadCompleted("typeChoice_${endpoint}")
                 }
             }
-        }
 
-        Closure<TypeDefinition> call = {
-            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.HIERARCHICAL_REQUIREMENT.typeDefinitionElementName)
+            AsyncService.instance.schedule({
+                TypeDefinitionCacheService.instance.getTypeDefinition((String) endpoint['typeDefinitionElementName'])
+            }, callback)
         }
-        AsyncService.instance.schedule(call, callback)
-
-        call = {
-            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.DEFECT.typeDefinitionElementName)
-        }
-        AsyncService.instance.schedule(call, callback)
-
-        call = {
-            TypeDefinitionCacheService.instance.getTypeDefinition(ApiEndpoint.TASK.typeDefinitionElementName)
-        }
-        AsyncService.instance.schedule(call, callback)
     }
-
 
     private void setupProjectChoices() {
         if (ProjectCacheService.instance.isPrimed) {
@@ -162,8 +155,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     private void loadProjectChoices() {
-        showLoadingAnimation('Loading project list...')
-        toggleInteractiveComponents(false)
+        asynchronousLoadStates['projectChoices'] = false
 
         Closure<List<Project>> call = {
             return ProjectCacheService.instance.cachedProjects
@@ -175,9 +167,13 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                     projects.each {
                         projectChoices.addItem(new ProjectItem(project: it))
                     }
-                    toggleInteractiveComponents(true)
-                    setStatus('Loaded project list')
+
+                    flagAsynchronousLoadCompleted('projectChoices')
                 }
+            }
+            void onFailure(Throwable error) {
+                super.onFailure(error)
+                flagAsynchronousLoadCompleted('projectChoices')
             }
         }
 
@@ -233,15 +229,19 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     Class getSelectedType() {
-        switch (typeChoices.selectedItem) {
-            case 'Defect':
-                return Defect
-            case 'Requirement':
-                return Requirement
-            case 'Task':
-                return Task
-            default:
-                return Artifact
+        typeChoicesToDomainClass[typeChoices.selectedItem as String] ?: Artifact
+    }
+
+    void flagAsynchronousLoadCompleted(String key) {
+        asynchronousLoadStates[key] = true
+        boolean ready = asynchronousLoadStates.inject(true, { acc, k, value ->
+            acc && value
+        })
+        if(ready) {
+            setStatus('Loaded Rally configuration')
+            SwingService.instance.queueForUiThread {
+                toggleInteractiveComponents(true)
+            }
         }
     }
 

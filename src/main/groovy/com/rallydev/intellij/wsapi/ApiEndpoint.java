@@ -49,8 +49,25 @@ public enum ApiEndpoint {
                 return "HierarchicalRequirement";
             case TASK:
                 return "Task";
+            case PROJECT:
+                return "Project";
             default:
                 throw new IllegalArgumentException("No type definition elementName for " + this);
+        }
+    }
+
+    public Class getDomainClass() {
+        switch (this) {
+            case DEFECT:
+                return Defect.class;
+            case HIERARCHICAL_REQUIREMENT:
+                return Requirement.class;
+            case TASK:
+                return Task.class;
+            case PROJECT:
+                return Project.class;
+            default:
+                throw new IllegalArgumentException("No domain class for " + this);
         }
     }
 

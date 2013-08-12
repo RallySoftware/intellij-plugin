@@ -9,7 +9,7 @@ class TypeDefinition extends DomainObject {
     String IDPrefix
     String readOnly
 
-    Collection<AttributeDefinition> attributeDefinitions
+    Collection<AttributeDefinition> attributeDefinitions = new LinkedList<AttributeDefinition>()
 
     @Override
     List<String> getExcludedProperties() {

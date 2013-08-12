@@ -132,7 +132,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.selectedType == Defect
 
         when:
-        searchWindow.typeChoices.setSelectedItem 'Requirement'
+        searchWindow.typeChoices.setSelectedItem 'User Story'
 
         then:
         searchWindow.selectedType == Requirement

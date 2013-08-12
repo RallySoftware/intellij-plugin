@@ -31,7 +31,7 @@ class TypeDefinitionCacheService {
 
     TypeDefinition getTypeDefinition(String elementName) {
         TypeDefinition typedef = cache.typeDefinitions[elementName]
-        if (true /*!typedef*/) {
+        if (!typedef) {
             //todo: Only happy path; add error handling
             ResultList<TypeDefinition> results =
                 typeDefinitionDao.find(new QueryBuilder().withConjunction('ElementName', eq, elementName))
