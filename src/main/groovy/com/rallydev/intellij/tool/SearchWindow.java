@@ -9,6 +9,8 @@ public class SearchWindow {
     protected JTabbedPane searchPane;
     protected JTextField searchBox;
     protected JComboBox typeChoices;
+
+    protected JLabel projectLabel;
     protected JComboBox projectChoices;
 
     protected JCheckBox formattedIDCheckBox;

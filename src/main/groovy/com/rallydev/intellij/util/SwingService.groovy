@@ -26,7 +26,17 @@ class SwingService {
                 later()
             }
         })
+    }
 
+    void insertChoiceAlphabetically(String choice, JComboBox comboBox) {
+        int position = 0
+        boolean foundPosition = false
+        while (position <= comboBox.itemCount && !foundPosition) {
+            ++position
+            foundPosition = position == comboBox.itemCount ||
+                    choice.compareToIgnoreCase((String) comboBox.getItemAt(position)) < 0
+        }
+        comboBox.insertItemAt(choice, position)
     }
 
 }

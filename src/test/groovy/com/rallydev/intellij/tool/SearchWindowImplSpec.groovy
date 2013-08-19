@@ -6,6 +6,7 @@ import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.content.ContentManager
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
@@ -38,7 +39,51 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         1 * toolWindow.getContentManager() >> { contentManager }
     }
 
-    def "setupWindow populates choices"() {
+    def "setupWindow shows/hides loading & toggles interactivity"() {
+        given:
+        SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
+
+        when:
+        searchWindow.setupWindow()
+
+        then:
+        1 * searchWindow.showLoadingAnimation('Loading Rally configuration...')
+        1 * searchWindow.toggleInteractiveComponents(false)
+
+        and:
+        1 * searchWindow.setStatus('Loaded Rally configuration')
+        1 * searchWindow.toggleInteractiveComponents(true)
+    }
+
+    def "setupWindow populates labels from typedefs"() {
+        given:
+        SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
+
+        when:
+        searchWindow.setupWindow()
+
+        then:
+        searchWindow.projectLabel.text == typeDefinitions[ApiEndpoint.PROJECT].displayName
+    }
+
+    def "setupWindow populates type choices"() {
+        given:
+        SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
+
+        when:
+        searchWindow.setupWindow()
+
+        then:
+        searchWindow.typeChoices.model.objects.size() == 4
+
+        and:
+        searchWindow.typeChoices.model.objects.contains ''
+        searchWindow.typeChoices.model.objects.contains typeDefinitions[ApiEndpoint.DEFECT].displayName
+        searchWindow.typeChoices.model.objects.contains typeDefinitions[ApiEndpoint.TASK].displayName
+        searchWindow.typeChoices.model.objects.contains typeDefinitions[ApiEndpoint.HIERARCHICAL_REQUIREMENT].displayName
+    }
+
+    def "setupWindow populates project choices when cache is primed"() {
         given:
         ProjectCacheService.instance.getIsPrimed() >> true
 
@@ -55,7 +100,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.projectChoices.getItemAt(2).toString() == projects[1].name
     }
 
-    def "setupWindow populates choices asynchronously when cache not primed"() {
+    def "setupWindow populates project choices asynchronously when cache not primed"() {
         given:
         ProjectCacheService.instance.getIsPrimed() >> false
 
@@ -126,19 +171,19 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.selectedType == Artifact
 
         when:
-        searchWindow.typeChoices.setSelectedItem 'Defect'
+        searchWindow.typeChoices.setSelectedItem typeDefinitions[ApiEndpoint.DEFECT].displayName
 
         then:
         searchWindow.selectedType == Defect
 
         when:
-        searchWindow.typeChoices.setSelectedItem 'Requirement'
+        searchWindow.typeChoices.setSelectedItem typeDefinitions[ApiEndpoint.HIERARCHICAL_REQUIREMENT].displayName
 
         then:
         searchWindow.selectedType == Requirement
 
         when:
-        searchWindow.typeChoices.setSelectedItem 'Task'
+        searchWindow.typeChoices.setSelectedItem typeDefinitions[ApiEndpoint.TASK].displayName
 
         then:
         searchWindow.selectedType == Task

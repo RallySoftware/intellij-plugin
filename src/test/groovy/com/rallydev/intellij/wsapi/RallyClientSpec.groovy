@@ -3,6 +3,8 @@ package com.rallydev.intellij.wsapi
 import com.google.common.util.concurrent.FutureCallback
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.util.AsyncService
+import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.HttpState
 import org.apache.commons.httpclient.HttpStatus
 import org.apache.commons.httpclient.auth.InvalidCredentialsException
 import org.apache.commons.httpclient.methods.GetMethod
@@ -25,7 +27,9 @@ class RallyClientSpec extends BaseContainerSpec {
         String password = 'first'
 
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
-        client.executeMethod(_) >> { HttpStatus.SC_OK }
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> { Mock(HttpState) }
+        client.httpClient.executeMethod(_) >> { HttpStatus.SC_OK }
         client.promptForPassword() >> { password }
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
@@ -57,7 +61,9 @@ class RallyClientSpec extends BaseContainerSpec {
     def "makeRequests does not prompt for password when set in config"() {
         given:
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
-        client.executeMethod(_) >> { HttpStatus.SC_OK }
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> { Mock(HttpState) }
+        client.httpClient.executeMethod(_) >> { HttpStatus.SC_OK }
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
                 getResponseBodyAsString() >> { '{}' }
@@ -85,7 +91,9 @@ class RallyClientSpec extends BaseContainerSpec {
 
         given:
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
-        client.executeMethod(_) >> { HttpStatus.SC_UNAUTHORIZED }
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> { Mock(HttpState) }
+        client.httpClient.executeMethod(_) >> { HttpStatus.SC_UNAUTHORIZED }
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
                 getResponseBodyAsString() >> { '{}' }

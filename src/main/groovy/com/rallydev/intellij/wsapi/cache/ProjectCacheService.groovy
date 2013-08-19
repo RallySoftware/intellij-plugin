@@ -8,41 +8,41 @@ import com.rallydev.intellij.wsapi.domain.Workspace
 
 class ProjectCacheService {
 
-    ProjectCache projectCache
+    ProjectCache cache
     RallyClient rallyClient
     GenericDao<Project> projectDao
 
-    ProjectCacheService(RallyClient rallyClient, ProjectCache projectCache) {
+    ProjectCacheService(RallyClient rallyClient, ProjectCache cache) {
         this.rallyClient = rallyClient
-        this.projectCache = projectCache
+        this.cache = cache
 
-        projectDao = new GenericDao<Project>(Project.class)
+        projectDao = new GenericDao<Project>(Project)
     }
 
     public static ProjectCacheService getInstance() {
-        return ServiceManager.getService(ProjectCacheService.class)
+        return ServiceManager.getService(ProjectCacheService)
     }
 
     boolean getIsPrimed() {
-        projectCache.projects != null &&
-                projectCache.loadedOn != null &&
-                (projectCache.loadedOn + 1) > new Date()
+        cache.projects != null &&
+                cache.loadedOn != null &&
+                (cache.loadedOn + 1) > new Date()
     }
 
     List<Project> getCachedProjects() {
         if (!isPrimed) {
-            projectCache.with {
+            cache.with {
                 projects = projectDao.find('Name')
                 projects.loadAllPages()
                 loadedOn = new Date()
                 workspace = new Workspace(name: 'hello')
             }
         }
-        projectCache.projects
+        cache.projects
     }
 
     void clear() {
-        projectCache.with {
+        cache.with {
             projects = null
             loadedOn = null
             workspace = null

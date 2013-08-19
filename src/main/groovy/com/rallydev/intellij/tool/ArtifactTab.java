@@ -9,7 +9,10 @@ public class ArtifactTab {
     protected JPanel contentPanel;
 
     protected JLabel header;
+
     protected JLabel projectLabel;
+    protected JLabel projectValue;
+
     protected JLabel lastUpdatedLabel;
     protected JTextPane description;
     protected JTextPane notes;

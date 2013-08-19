@@ -13,15 +13,24 @@ import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.tool.OpenArtifacts
 import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.SwingService
+import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
 import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.cache.ProjectCache
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
+import com.rallydev.intellij.wsapi.cache.TypeDefinitionCache
+import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.domain.Project
+import com.rallydev.intellij.wsapi.domain.TypeDefinition
 import org.jetbrains.annotations.NotNull
 import org.picocontainer.MutablePicoContainer
 import spock.lang.Specification
+
+import static com.rallydev.intellij.wsapi.ApiEndpoint.DEFECT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.TASK
 
 abstract class BaseContainerSpec extends Specification {
 
@@ -32,6 +41,12 @@ abstract class BaseContainerSpec extends Specification {
 
     RallyConfig config
     List<Project> projects = [new Project(name: 'Project1'), new Project(name: 'Project1')]
+    Map<ApiEndpoint, TypeDefinition> typeDefinitions = [
+            (DEFECT): new TypeDefinition(displayName: 'Defect!'),
+            (HIERARCHICAL_REQUIREMENT): new TypeDefinition(displayName: 'User Story!'),
+            (PROJECT): new TypeDefinition(displayName: 'Project!'),
+            (TASK): new TypeDefinition(displayName: 'Task!')
+    ]
 
     def setup() {
         //Application application = new MockApplication(myTestRootDisposable), myTestRootDisposable
@@ -52,12 +67,8 @@ abstract class BaseContainerSpec extends Specification {
         }
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
 
-        ProjectCache projectCache = new ProjectCache(loadedOn: new Date(), projects: projects)
-        registerComponentInstance(projectCache)
-
-        ProjectCacheService projectCacheService = Spy(ProjectCacheService, constructorArgs: [recordingClient, projectCache])
-        projectCacheService.getCachedProjects() >> { projects }
-        registerComponentInstance(ProjectCacheService.name, projectCacheService)
+        setupProjects(recordingClient)
+        setupTypeDefinitions(recordingClient)
 
         SwingService swingService = new SwingService()
         swingService.metaClass.doInUiThread = { Closure closure ->
@@ -70,15 +81,35 @@ abstract class BaseContainerSpec extends Specification {
 
         AsyncService asyncService = new AsyncService()
         asyncService.metaClass.schedule = { Closure callable, FutureCallback callback ->
-            println 'Did mock implementation'
             def result = callable()
-            if(callback) {
+            if (callback) {
                 callback.onSuccess(result)
             }
         }
         registerComponentInstance(AsyncService.name, asyncService)
 
         registerComponentImplementation(OpenArtifacts)
+    }
+
+    protected void setupProjects(RallyClient recordingClient) {
+        ProjectCache projectCache = new ProjectCache(loadedOn: new Date(), projects: projects)
+        registerComponentInstance(projectCache)
+
+        ProjectCacheService projectCacheService = Spy(ProjectCacheService, constructorArgs: [recordingClient, projectCache])
+        projectCacheService.getCachedProjects() >> { projects }
+        registerComponentInstance(ProjectCacheService.name, projectCacheService)
+    }
+
+    protected void setupTypeDefinitions(RallyClient recordingClient) {
+        TypeDefinitionCache typeDefinitionCache = new TypeDefinitionCache()
+        typeDefinitions.each { key, value ->
+            typeDefinitionCache.typeDefinitions[key.typeDefinitionElementName] = value
+        }
+        registerComponentInstance(typeDefinitionCache)
+
+        TypeDefinitionCacheService typeDefinitionCacheService = Spy(TypeDefinitionCacheService, constructorArgs: [recordingClient, typeDefinitionCache])
+        //projectCacheService.getCachedProjects() >> { projects }
+        registerComponentInstance(TypeDefinitionCacheService.name, typeDefinitionCacheService)
     }
 
     protected registerComponentInstance(Object instance) {
@@ -98,7 +129,6 @@ abstract class BaseContainerSpec extends Specification {
         picoContainer.unregisterComponent(key)
         picoContainer.registerComponentImplementation(serviceImplementation.name, serviceImplementation)
     }
-
 
     //From com.intellij.testFramework.UsefulTestCase
     protected final Disposable myTestRootDisposable = new Disposable() {

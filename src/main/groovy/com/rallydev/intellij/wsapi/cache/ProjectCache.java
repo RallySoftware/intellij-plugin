@@ -18,6 +18,7 @@ import java.util.List;
 )
 public class ProjectCache implements PersistentStateComponent<ProjectCache> {
 
+    //todo: Workspace not yet used
     public Workspace workspace;
     public List<Project> projects = new LinkedList<Project>();
     public Date loadedOn;

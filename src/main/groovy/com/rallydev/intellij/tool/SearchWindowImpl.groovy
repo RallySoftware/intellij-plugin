@@ -13,16 +13,22 @@ import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
+import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
-import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Project
-import com.rallydev.intellij.wsapi.domain.Requirement
-import com.rallydev.intellij.wsapi.domain.Task
+import com.rallydev.intellij.wsapi.domain.TypeDefinition
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+
+import static com.rallydev.intellij.wsapi.ApiEndpoint.DEFECT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
+import static com.rallydev.intellij.wsapi.ApiEndpoint.TASK
 
 //todo: store checkbox state
 class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
@@ -30,6 +36,8 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
     ToolWindow myToolWindow
     Map<String, Artifact> searchResults = new HashMap<>()
+    ConcurrentMap<String, Boolean> asynchronousLoadStates = new ConcurrentHashMap<>()
+    ConcurrentMap<String, Class> typeChoicesToDomainClass = new ConcurrentHashMap<>()
     com.intellij.openapi.project.Project project
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
@@ -41,16 +49,18 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void setupWindow() {
-        setupTypeChoices()
         setupTable()
         installSearchListener()
-        setupProjectChoices()
-    }
 
-    private void setupTypeChoices() {
-        typeChoices.setModel(new DefaultComboBoxModel(
-                ['', 'Defect', 'Task', 'Requirement'].toArray()
-        ))
+        toggleInteractiveComponents(false)
+        showLoadingAnimation('Loading Rally configuration...')
+        asynchronousLoadStates['setup'] = false
+
+        setupTypeChoices()
+        setupLabels()
+        setupProjectChoices()
+
+        flagAsynchronousLoadCompleted('setup')
     }
 
     private void setupTable() {
@@ -73,7 +83,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         model.addColumn('Name')
         model.addColumn('Last Updated')
         model.addColumn('Type')
-        model.addColumn('Project')
+        //model.addColumn('Project')
     }
 
     private void installSearchListener() {
@@ -82,6 +92,59 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         searchPane.rootPane?.setDefaultButton(searchButton)
     }
 
+    private void setupLabels() {
+        asynchronousLoadStates['labels'] = false
+        Closure<TypeDefinition> call = {
+            TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName)
+        }
+
+        FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
+            void onSuccess(TypeDefinition typeDefinition) {
+                SwingService.instance.queueForUiThread {
+                    projectLabel.setText(typeDefinition.displayName)
+                    ((DefaultTableModel) resultsTable.model).addColumn('Project')
+                }
+                flagAsynchronousLoadCompleted('labels')
+            }
+
+            void onFailure(Throwable error) {
+                super.onFailure(error)
+                flagAsynchronousLoadCompleted('labels')
+            }
+        }
+
+        AsyncService.instance.schedule(call, callback)
+    }
+
+    private void setupTypeChoices() {
+        typeChoices.setModel(new DefaultComboBoxModel([''].toArray()))
+
+        [DEFECT, TASK, HIERARCHICAL_REQUIREMENT].each { endpoint ->
+            asynchronousLoadStates["typeChoice_${endpoint}"] = false
+            FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
+                void onSuccess(TypeDefinition typeDefinition) {
+                    SwingService.instance.queueForUiThread {
+                        asynchronousLoadStates["typeChoice_${endpoint}"] = true
+                        typeChoicesToDomainClass[typeDefinition.displayName] = endpoint.domainClass
+                        SwingService.instance.insertChoiceAlphabetically(typeDefinition.displayName, typeChoices)
+                    }
+
+                    flagAsynchronousLoadCompleted("typeChoice_${endpoint}")
+                }
+
+                void onFailure(Throwable error) {
+                    super.onFailure(error)
+                    flagAsynchronousLoadCompleted("typeChoice_${endpoint}")
+                }
+            }
+
+            AsyncService.instance.schedule({
+                TypeDefinitionCacheService.instance.getTypeDefinition((String) endpoint['typeDefinitionElementName'])
+            }, callback)
+        }
+    }
+
+    //todo: Think about removing primed check to simplify. Rest of async stuff doesn't bother
     private void setupProjectChoices() {
         if (ProjectCacheService.instance.isPrimed) {
             projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
@@ -94,8 +157,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     private void loadProjectChoices() {
-        showLoadingAnimation('Loading project list...')
-        toggleInteractiveComponents(false)
+        asynchronousLoadStates['projectChoices'] = false
 
         Closure<List<Project>> call = {
             return ProjectCacheService.instance.cachedProjects
@@ -107,9 +169,14 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                     projects.each {
                         projectChoices.addItem(new ProjectItem(project: it))
                     }
-                    toggleInteractiveComponents(true)
-                    setStatus('Loaded project list')
+
+                    flagAsynchronousLoadCompleted('projectChoices')
                 }
+            }
+
+            void onFailure(Throwable error) {
+                super.onFailure(error)
+                flagAsynchronousLoadCompleted('projectChoices')
             }
         }
 
@@ -165,15 +232,19 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     Class getSelectedType() {
-        switch (typeChoices.selectedItem) {
-            case 'Defect':
-                return Defect
-            case 'Requirement':
-                return Requirement
-            case 'Task':
-                return Task
-            default:
-                return Artifact
+        typeChoicesToDomainClass[typeChoices.selectedItem as String] ?: Artifact
+    }
+
+    void flagAsynchronousLoadCompleted(String key) {
+        asynchronousLoadStates[key] = true
+        boolean ready = asynchronousLoadStates.inject(true, { acc, k, value ->
+            acc && value
+        })
+        if (ready) {
+            setStatus('Loaded Rally configuration')
+            SwingService.instance.queueForUiThread {
+                toggleInteractiveComponents(true)
+            }
         }
     }
 

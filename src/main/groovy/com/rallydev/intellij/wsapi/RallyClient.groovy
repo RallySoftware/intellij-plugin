@@ -12,6 +12,7 @@ import com.rallydev.intellij.config.RallyPasswordDialog
 import com.rallydev.intellij.util.AsyncService
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpStatus
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.auth.InvalidCredentialsException
@@ -19,12 +20,16 @@ import org.apache.commons.httpclient.methods.GetMethod
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 
-class RallyClient extends HttpClient {
+class RallyClient {
     private static final Logger log = Logger.getInstance(RallyClient)
 
     AsyncService asyncService
+    HttpClient httpClient
 
     RallyClient(AsyncService asyncService) {
+        MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager()
+        httpClient = new HttpClient(connectionManager)
+
         this.asyncService = asyncService
     }
 
@@ -47,20 +52,27 @@ class RallyClient extends HttpClient {
     }
 
     private ApiResponse doMakeRequest(@NotNull GetRequest request) {
-        state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(getUsername(), getPassword()))
+        httpClient.state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(getUsername(), getPassword()))
 
         GetMethod method = buildMethod(request)
-        log.debug "Rally Client requesting [${method.URI}]"
-        int code = executeMethod(method)
+        log.info "Rally Client requesting\n\t\t${method.URI}"
 
-        switch (code) {
-            case HttpStatus.SC_OK:
-                return new ApiResponse(method.responseBodyAsString)
-            case HttpStatus.SC_UNAUTHORIZED:
-                onAuthError()
-                throw new InvalidCredentialsException('The provided user name and password are not valid')
-            default:
-                throw new RuntimeException('Unhandled response code')
+        log.info "Client: ${httpClient}"
+
+        int code = httpClient.executeMethod(method)
+
+        try {
+            switch (code) {
+                case HttpStatus.SC_OK:
+                    return new ApiResponse(method.responseBodyAsString)
+                case HttpStatus.SC_UNAUTHORIZED:
+                    onAuthError()
+                    throw new InvalidCredentialsException('The provided user name and password are not valid')
+                default:
+                    throw new RuntimeException('Unhandled response code')
+            }
+        } finally {
+            method.releaseConnection()
         }
     }
 

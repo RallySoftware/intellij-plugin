@@ -44,6 +44,11 @@
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache"/>
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCacheService"
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCacheService"/>
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.TypeDefinitionCache"
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.TypeDefinitionCache"/>
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService"
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService"/>
+
 
         <!--Other services-->
         <applicationService serviceInterface="com.rallydev.intellij.util.AsyncService"
