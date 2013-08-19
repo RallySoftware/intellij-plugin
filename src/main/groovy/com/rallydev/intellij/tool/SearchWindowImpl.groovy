@@ -83,7 +83,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         model.addColumn('Name')
         model.addColumn('Last Updated')
         model.addColumn('Type')
-        model.addColumn('Project')
+        //model.addColumn('Project')
     }
 
     private void installSearchListener() {
@@ -101,12 +101,12 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
             void onSuccess(TypeDefinition typeDefinition) {
                 SwingService.instance.queueForUiThread {
-                    log.info "Project typedef display name: ${typeDefinition.displayName}"
                     projectLabel.setText(typeDefinition.displayName)
+                    ((DefaultTableModel) resultsTable.model).addColumn('Project')
                 }
-
                 flagAsynchronousLoadCompleted('labels')
             }
+
             void onFailure(Throwable error) {
                 super.onFailure(error)
                 flagAsynchronousLoadCompleted('labels')
@@ -131,6 +131,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
 
                     flagAsynchronousLoadCompleted("typeChoice_${endpoint}")
                 }
+
                 void onFailure(Throwable error) {
                     super.onFailure(error)
                     flagAsynchronousLoadCompleted("typeChoice_${endpoint}")
@@ -143,6 +144,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         }
     }
 
+    //todo: Think about removing primed check to simplify. Rest of async stuff doesn't bother
     private void setupProjectChoices() {
         if (ProjectCacheService.instance.isPrimed) {
             projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
@@ -171,6 +173,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                     flagAsynchronousLoadCompleted('projectChoices')
                 }
             }
+
             void onFailure(Throwable error) {
                 super.onFailure(error)
                 flagAsynchronousLoadCompleted('projectChoices')
@@ -237,7 +240,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         boolean ready = asynchronousLoadStates.inject(true, { acc, k, value ->
             acc && value
         })
-        if(ready) {
+        if (ready) {
             setStatus('Loaded Rally configuration')
             SwingService.instance.queueForUiThread {
                 toggleInteractiveComponents(true)

@@ -22,7 +22,7 @@ class ResultListImpl<T extends DomainObject> extends ArrayList<T> implements Res
 
     void loadAllPages() {
         int loadCount = 0
-        while(getHasMorePages() && loadCount++ < MAX_PAGES_TO_LOAD) {
+        while (getHasMorePages() && loadCount++ < MAX_PAGES_TO_LOAD) {
             loadNextPage()
         }
     }
