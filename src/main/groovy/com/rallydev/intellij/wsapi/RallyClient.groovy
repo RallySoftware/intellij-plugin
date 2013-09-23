@@ -6,6 +6,8 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.text.StringUtil
+import com.intellij.util.net.HttpConfigurable
 import com.rallydev.intellij.config.PasswordNotConfiguredException
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.config.RallyPasswordDialog
@@ -53,6 +55,7 @@ class RallyClient {
 
     private ApiResponse doMakeRequest(@NotNull GetRequest request) {
         httpClient.state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(getUsername(), getPassword()))
+        configureProxy()
 
         GetMethod method = buildMethod(request)
         log.info "Rally Client requesting\n\t\t${method.URI}"
@@ -73,6 +76,18 @@ class RallyClient {
             }
         } finally {
             method.releaseConnection()
+        }
+    }
+
+    private void configureProxy() {
+        final HttpConfigurable proxySettings = HttpConfigurable.getInstance()
+        if (proxySettings && proxySettings.USE_HTTP_PROXY && !StringUtil.isEmptyOrSpaces(proxySettings.PROXY_HOST)) {
+            httpClient.hostConfiguration.setProxy(proxySettings.PROXY_HOST, proxySettings.PROXY_PORT)
+            if (proxySettings.PROXY_AUTHENTICATION) {
+                httpClient.state.setProxyCredentials(AuthScope.ANY,
+                        new UsernamePasswordCredentials(proxySettings.PROXY_LOGIN, proxySettings.getPlainProxyPassword())
+                )
+            }
         }
     }
 
