@@ -20,7 +20,7 @@ class VersionCheck implements ApplicationComponent {
         Closure check = {
             checkVersion()
         }
-        JobScheduler.getScheduler().scheduleAtFixedRate(check, 0, 2, TimeUnit.HOURS)
+        JobScheduler.getScheduler().scheduleAtFixedRate(check, 0, 8, TimeUnit.HOURS)
     }
 
     private void checkVersion() {
