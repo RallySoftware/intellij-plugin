@@ -31,12 +31,12 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         ContentManager contentManager = Mock(ContentManager)
         ToolWindow toolWindow = Mock(ToolWindow)
 
-        when:
+        when: "ToolWindowFactory interface's createToolWindowContent invoked"
         searchWindow.createToolWindowContent(null, toolWindow)
 
-        then:
+        then: "Content manager's add content is called"
+        1 * toolWindow.getContentManager() >> contentManager
         1 * contentManager.addContent(_ as Content) >> {}
-        1 * toolWindow.getContentManager() >> { contentManager }
     }
 
     def "setupWindow shows/hides loading & toggles interactivity"() {
@@ -47,8 +47,9 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.setupWindow()
 
         then:
-        1 * searchWindow.showLoadingAnimation('Loading Rally configuration...')
-        1 * searchWindow.toggleInteractiveComponents(false)
+        1 * searchWindow.showLoadingAnimation('Loading Rally workspaces...')
+        1 * searchWindow.toggleInteractiveGenericComponents(false)
+        searchWindow.toggleInteractiveWorkspaceComponents(false)
 
         and:
         1 * searchWindow.setStatus('Loaded Rally configuration')
@@ -85,19 +86,15 @@ class SearchWindowImplSpec extends BaseContainerSpec {
 
     def "setupWindow populates project choices asynchronously"() {
         given:
-//        ProjectCacheService.instance.getIsPrimed() >> false
-        true
-
-        and:
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
 
         when:
         searchWindow.setupWindow()
 
         then:
-        1 * searchWindow.showLoadingAnimation(_) >> {}
-        1 * searchWindow.setStatus(_) >> {}
-        2 * searchWindow.toggleInteractiveComponents(_ as Boolean) >> {}
+        1 * searchWindow.showLoadingAnimation('Loading workspace data...') >> {}
+        1 * searchWindow.showLoadingAnimation('Loading Rally workspaces...') >> {}
+        1 * searchWindow.toggleInteractiveComponents(true) >> {}
 
         and:
         searchWindow.projectChoices.size() == projects.size() + 1

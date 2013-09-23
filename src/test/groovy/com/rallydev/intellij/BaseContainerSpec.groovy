@@ -98,8 +98,8 @@ abstract class BaseContainerSpec extends Specification {
     }
 
     protected void setupWorkspaces(RallyClient recordingClient) {
-        WorkspaceCache workspaceCache = new WorkspaceCache(workspaces: [
-                new Workspace(_ref: workspaceRef)
+        WorkspaceCache workspaceCache = new WorkspaceCache(loadedOn: new Date(), workspaces: [
+                new Workspace(_ref: workspaceRef, name: 'TestWorkspace', objectID: -1)
         ])
 
         WorkspaceCacheService workspaceCacheService = new WorkspaceCacheService(recordingClient, workspaceCache)
