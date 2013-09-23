@@ -14,6 +14,7 @@ class Search {
     List<String> searchAttributes = []
     String project
     Class domainClass
+    String workspaceRef = null
 
     ListenableFuture<List> doSearch(FutureCallback<ResultList> callback , int pageSize = 30) {
         QueryBuilder queryBuilder = new QueryBuilder()
@@ -27,7 +28,7 @@ class Search {
             queryBuilder.withConjunction('Project', eq, project)
         }
 
-        GenericDao<Artifact> dao = new GenericDao<>(domainClass)
+        GenericDao<Artifact> dao = new GenericDao<>(domainClass, workspaceRef)
         dao.findAsync(callback, queryBuilder, 'LastUpdateDate&dir=DESC', pageSize)
     }
 

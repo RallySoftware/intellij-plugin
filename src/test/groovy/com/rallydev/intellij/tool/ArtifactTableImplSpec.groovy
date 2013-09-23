@@ -9,7 +9,7 @@ class ArtifactTableImplSpec extends BaseContainerSpec {
 
     def "labels setup from typeDefinition"() {
         given:
-        Artifact artifact = new Artifact(formattedID: 'S1')
+        Artifact artifact = new Artifact(formattedID: 'S1', workspaceRef: workspaceRef)
         ArtifactTabImpl artifactTab = new ArtifactTabImpl(artifact, Mock(Project))
 
         expect:

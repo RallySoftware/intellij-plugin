@@ -5,12 +5,12 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.rallydev.intellij.wsapi.domain.Project;
-import com.rallydev.intellij.wsapi.domain.Workspace;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @State(
         name = "Rally Project Cache",
@@ -18,10 +18,8 @@ import java.util.List;
 )
 public class ProjectCache implements PersistentStateComponent<ProjectCache> {
 
-    //todo: Workspace not yet used
-    public Workspace workspace;
     public List<Project> projects = new LinkedList<Project>();
-    public Date loadedOn;
+    public Map<String, List<Project>> projectsByWorkspace = new HashMap<String, List<Project>>();
 
     @Nullable
     @Override
@@ -31,6 +29,7 @@ public class ProjectCache implements PersistentStateComponent<ProjectCache> {
 
     @Override
     public void loadState(ProjectCache state) {
+        projectsByWorkspace = new HashMap<String, List<Project>>();
         XmlSerializerUtil.copyBean(state, this);
     }
 

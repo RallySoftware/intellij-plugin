@@ -14,12 +14,16 @@ import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
+import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
+import com.rallydev.intellij.wsapi.domain.Workspace
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import java.awt.event.ItemEvent
+import java.awt.event.ItemListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.concurrent.ConcurrentHashMap
@@ -30,13 +34,13 @@ import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.TASK
 
-//todo: store checkbox state
+//todo: store checkbox's state
 class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     static final Logger log = Logger.getInstance(SearchWindowImpl)
 
     ToolWindow myToolWindow
     Map<String, Artifact> searchResults = new HashMap<>()
-    ConcurrentMap<String, Boolean> asynchronousLoadStates = new ConcurrentHashMap<>()
+    ConcurrentMap<String, Boolean> asynchronousLoadingStates = new ConcurrentHashMap<>()
     ConcurrentMap<String, Class> typeChoicesToDomainClass = new ConcurrentHashMap<>()
     com.intellij.openapi.project.Project project
 
@@ -51,16 +55,13 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     void setupWindow() {
         setupTable()
         installSearchListener()
+        installWorkspaceListener()
 
-        toggleInteractiveComponents(false)
-        showLoadingAnimation('Loading Rally configuration...')
-        asynchronousLoadStates['setup'] = false
+        toggleInteractiveGenericComponents(false)
+        toggleInteractiveWorkspaceComponents(false)
+        showLoadingAnimation('Loading Rally workspaces...')
 
-        setupTypeChoices()
-        setupLabels()
-        setupProjectChoices()
-
-        flagAsynchronousLoadCompleted('setup')
+        setupWorkspaceChoices()
     }
 
     private void setupTable() {
@@ -83,7 +84,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         model.addColumn('Name')
         model.addColumn('Last Updated')
         model.addColumn('Type')
-        //model.addColumn('Project')
+        model.addColumn('Project')
     }
 
     private void installSearchListener() {
@@ -92,17 +93,67 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         searchPane.rootPane?.setDefaultButton(searchButton)
     }
 
-    private void setupLabels() {
-        asynchronousLoadStates['labels'] = false
+    private void installWorkspaceListener() {
+        workspaceChoices.addItemListener(new ItemListener() {
+            @Override
+            void itemStateChanged(ItemEvent itemEvent) {
+                if (itemEvent.stateChange == ItemEvent.SELECTED) {
+                    toggleInteractiveWorkspaceComponents(false)
+                    showLoadingAnimation('Loading workspace data...')
+                    asynchronousLoadingStates['setup'] = false
+
+                    String workspaceRef = getSelectedWorkspaceRef()
+                    if (workspaceRef) {
+                        setupLabels(workspaceRef)
+                        setupTypeChoices(workspaceRef)
+                        setupProjectChoices(workspaceRef)
+                    }
+
+                    flagAsynchronousLoadCompleted('setup')
+                }
+            }
+        })
+    }
+
+    private void setupWorkspaceChoices() {
+        Closure<List<Workspace>> call = {
+            return WorkspaceCacheService.instance.cachedWorkspaces
+        }
+
+        FutureCallback<List<Workspace>> callback = new ErrorMessageFutureCallback<List<Workspace>>() {
+            void onSuccess(List<Workspace> workspaces) {
+                SwingService.instance.queueForUiThread {
+                    workspaces.each { workspace ->
+                        workspaceChoices.addItem(new WorkspaceItem(workspace: workspace))
+                    }
+                    toggleInteractiveGenericComponents(true)
+                    setStatus('Loaded workspaces')
+                }
+            }
+
+            void onFailure(Throwable error) {
+                super.onFailure(error)
+                setStatus('Failed to load workspaces')
+                //todo: need a refresh/try again button
+                toggleInteractiveGenericComponents(true)
+            }
+        }
+
+        AsyncService.instance.schedule(call, callback)
+    }
+
+    private void setupLabels(String workspaceRef) {
+        asynchronousLoadingStates['labels'] = false
         Closure<TypeDefinition> call = {
-            TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName)
+            TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName, workspaceRef)
         }
 
         FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
             void onSuccess(TypeDefinition typeDefinition) {
                 SwingService.instance.queueForUiThread {
-                    projectLabel.setText(typeDefinition.displayName)
-                    ((DefaultTableModel) resultsTable.model).addColumn('Project')
+                    projectLabel.text = typeDefinition.displayName
+                    ((DefaultTableModel) resultsTable.model).columnIdentifiers = ['Formatted ID', 'Name', 'Last Updated', 'Type', typeDefinition.displayName]
+                    //((DefaultTableModel) resultsTable.model).columnIdentifiers = ['Formatted ID', 'Name', 'Last Updated', 'Type', "Debugging ${typeDefinition.objectID}"]
                 }
                 flagAsynchronousLoadCompleted('labels')
             }
@@ -116,15 +167,19 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         AsyncService.instance.schedule(call, callback)
     }
 
-    private void setupTypeChoices() {
-        typeChoices.setModel(new DefaultComboBoxModel([''].toArray()))
+    private void setupTypeChoices(String workspaceRef) {
+        typeChoices.model = new DefaultComboBoxModel([''].toArray())
 
         [DEFECT, TASK, HIERARCHICAL_REQUIREMENT].each { endpoint ->
-            asynchronousLoadStates["typeChoice_${endpoint}"] = false
+            asynchronousLoadingStates["typeChoice_${endpoint}"] = false
+            Closure<TypeDefinition> call = {
+                TypeDefinitionCacheService.instance.getTypeDefinition((String) endpoint['typeDefinitionElementName'], workspaceRef)
+            }
+
             FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
                 void onSuccess(TypeDefinition typeDefinition) {
                     SwingService.instance.queueForUiThread {
-                        asynchronousLoadStates["typeChoice_${endpoint}"] = true
+                        asynchronousLoadingStates["typeChoice_${endpoint}"] = true
                         typeChoicesToDomainClass[typeDefinition.displayName] = endpoint.domainClass
                         SwingService.instance.insertChoiceAlphabetically(typeDefinition.displayName, typeChoices)
                     }
@@ -138,33 +193,20 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                 }
             }
 
-            AsyncService.instance.schedule({
-                TypeDefinitionCacheService.instance.getTypeDefinition((String) endpoint['typeDefinitionElementName'])
-            }, callback)
+            AsyncService.instance.schedule(call, callback)
         }
     }
 
-    //todo: Think about removing primed check to simplify. Rest of async stuff doesn't bother
-    private void setupProjectChoices() {
-        if (ProjectCacheService.instance.isPrimed) {
-            projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
-            ProjectCacheService.instance.cachedProjects.each {
-                projectChoices.addItem(new ProjectItem(project: it))
-            }
-        } else {
-            loadProjectChoices()
-        }
-    }
-
-    private void loadProjectChoices() {
-        asynchronousLoadStates['projectChoices'] = false
-
+    private void setupProjectChoices(String workspaceRef) {
+        asynchronousLoadingStates['projectChoices'] = false
         Closure<List<Project>> call = {
-            return ProjectCacheService.instance.cachedProjects
+            return ProjectCacheService.instance.getCachedProjects(workspaceRef)
         }
+
         FutureCallback<List<Project>> callback = new ErrorMessageFutureCallback<List<Project>>() {
             void onSuccess(List<Project> projects) {
                 SwingService.instance.queueForUiThread {
+                    projectChoices.model = new DefaultComboBoxModel()
                     projectChoices.addItem(new ProjectItem(project: new Project(name: '')))
                     projects.each {
                         projectChoices.addItem(new ProjectItem(project: it))
@@ -236,14 +278,35 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void flagAsynchronousLoadCompleted(String key) {
-        asynchronousLoadStates[key] = true
-        boolean ready = asynchronousLoadStates.inject(true, { acc, k, value ->
+        asynchronousLoadingStates[key] = true
+        boolean ready = asynchronousLoadingStates.inject(true, { acc, k, value ->
             acc && value
         })
         if (ready) {
             setStatus('Loaded Rally configuration')
             SwingService.instance.queueForUiThread {
                 toggleInteractiveComponents(true)
+            }
+        }
+    }
+
+    void toggleInteractiveGenericComponents(Boolean enabled) {
+        SwingService.instance.doInUiThread {
+            [
+                    searchBox, workspaceChoices
+            ].each { JComponent component ->
+                component.enabled = enabled
+            }
+        }
+    }
+
+    void toggleInteractiveWorkspaceComponents(Boolean enabled) {
+        SwingService.instance.doInUiThread {
+            [
+                    typeChoices, projectChoices, formattedIDCheckBox, nameCheckBox,
+                    descriptionCheckBox, searchButton, resultsTable
+            ].each { JComponent component ->
+                component.enabled = enabled
             }
         }
     }
@@ -279,6 +342,10 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         projectChoices.getSelectedItem()?.project?._ref
     }
 
+    String getSelectedWorkspaceRef() {
+        ((WorkspaceItem) workspaceChoices.selectedItem).workspace._ref
+    }
+
     ContentFactory getContentFactory() {
         ContentFactory.SERVICE.getInstance()
     }
@@ -287,7 +354,6 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         ToolWindowManager.getInstance(project)
     }
 
-
     static class ProjectItem {
         @Delegate
         Project project
@@ -295,6 +361,16 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         @Override
         String toString() {
             project.name
+        }
+    }
+
+    static class WorkspaceItem {
+        @Delegate
+        Workspace workspace
+
+        @Override
+        String toString() {
+            workspace.name
         }
     }
 

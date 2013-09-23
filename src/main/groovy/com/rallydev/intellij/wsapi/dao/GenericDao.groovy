@@ -15,15 +15,20 @@ import com.rallydev.intellij.wsapi.domain.DomainObject
 
 class GenericDao<T extends DomainObject> {
     Class<T> domainClass
+    String workspaceRef
 
-    GenericDao(Class<T> domainClass) {
+    GenericDao(Class<T> domainClass, String workspaceRef = null) {
         this.domainClass = domainClass
+        this.workspaceRef = workspaceRef
     }
 
     T findById(String id) {
         GetRequest request = new GetRequest(ApiEndpoint.ARTIFACT)
                 .withFetch()
                 .withObjectId(id)
+        if(workspaceRef) {
+            request.withWorkspace(workspaceRef)
+        }
         fromSingleResponse(RallyClient.getInstance().makeRequest(request))
     }
 
@@ -70,6 +75,9 @@ class GenericDao<T extends DomainObject> {
         }
         if (query?.hasConditions()) {
             request.withQuery(query.toString())
+        }
+        if(workspaceRef) {
+            request.withWorkspace(workspaceRef)
         }
         request
     }

@@ -40,6 +40,21 @@ class SearchSpec extends BaseContainerSpec {
         recordingClientRequests[0].contains('query=((Name contains "hello") OR (Description contains "hello"))')
     }
 
+    def "search restricts by workspace"() {
+        given:
+        Search search = new Search<>(domainClass: Defect, workspaceRef: workspaceRef)
+
+        when:
+        search.doSearch(callback)
+
+        and:
+        done.get()
+
+        then:
+        recordingClientRequests
+        recordingClientRequests[0].contains('workspace=http://rally1.rallydev.com')
+    }
+
     def "search has no restrictions when term is empty"() {
         given:
         Search search = new Search<>(

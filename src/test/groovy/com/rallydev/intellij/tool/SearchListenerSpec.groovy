@@ -20,6 +20,7 @@ class SearchListenerSpec extends BaseContainerSpec {
             getSearchAttributes() >> { ['TestAttribute'] }
             getSelectedType() >> { Defect }
             getSearchTerm() >> { 'The search' }
+            getSelectedWorkspaceRef() >> { workspaceRef }
         }
     }
 
@@ -36,6 +37,7 @@ class SearchListenerSpec extends BaseContainerSpec {
         searchListener.doActionPerformed()
 
         then:
+        search.workspaceRef == workspaceRef
         search.term == 'The search'
         search.searchAttributes == ['TestAttribute']
         search.domainClass == Defect

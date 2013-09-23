@@ -28,6 +28,7 @@ class SearchListener implements ActionListener {
             searchAttributes = window.searchAttributes
             domainClass = window.selectedType
             project = window.selectedProject
+            workspaceRef = window.selectedWorkspaceRef
         }
 
         window.enableControls(false)

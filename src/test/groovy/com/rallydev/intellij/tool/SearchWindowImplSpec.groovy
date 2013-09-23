@@ -31,12 +31,12 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         ContentManager contentManager = Mock(ContentManager)
         ToolWindow toolWindow = Mock(ToolWindow)
 
-        when:
+        when: "ToolWindowFactory interface's createToolWindowContent invoked"
         searchWindow.createToolWindowContent(null, toolWindow)
 
-        then:
+        then: "Content manager's add content is called"
+        1 * toolWindow.getContentManager() >> contentManager
         1 * contentManager.addContent(_ as Content) >> {}
-        1 * toolWindow.getContentManager() >> { contentManager }
     }
 
     def "setupWindow shows/hides loading & toggles interactivity"() {
@@ -47,8 +47,9 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.setupWindow()
 
         then:
-        1 * searchWindow.showLoadingAnimation('Loading Rally configuration...')
-        1 * searchWindow.toggleInteractiveComponents(false)
+        1 * searchWindow.showLoadingAnimation('Loading Rally workspaces...')
+        1 * searchWindow.toggleInteractiveGenericComponents(false)
+        searchWindow.toggleInteractiveWorkspaceComponents(false)
 
         and:
         1 * searchWindow.setStatus('Loaded Rally configuration')
@@ -83,37 +84,17 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.typeChoices.model.objects.contains typeDefinitions[ApiEndpoint.HIERARCHICAL_REQUIREMENT].displayName
     }
 
-    def "setupWindow populates project choices when cache is primed"() {
+    def "setupWindow populates project choices asynchronously"() {
         given:
-        ProjectCacheService.instance.getIsPrimed() >> true
-
-        and:
-        SearchWindowImpl searchWindow = new SearchWindowImpl()
-        searchWindow.setupWindow()
-
-        expect:
-        searchWindow.projectChoices.size() == projects.size() + 1
-
-        and:
-        searchWindow.projectChoices.getItemAt(0).toString() == ''
-        searchWindow.projectChoices.getItemAt(1).toString() == projects[0].name
-        searchWindow.projectChoices.getItemAt(2).toString() == projects[1].name
-    }
-
-    def "setupWindow populates project choices asynchronously when cache not primed"() {
-        given:
-        ProjectCacheService.instance.getIsPrimed() >> false
-
-        and:
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
 
         when:
         searchWindow.setupWindow()
 
         then:
-        1 * searchWindow.showLoadingAnimation(_) >> {}
-        1 * searchWindow.setStatus(_) >> {}
-        2 * searchWindow.toggleInteractiveComponents(_ as Boolean) >> {}
+        1 * searchWindow.showLoadingAnimation('Loading workspace data...') >> {}
+        1 * searchWindow.showLoadingAnimation('Loading Rally workspaces...') >> {}
+        1 * searchWindow.toggleInteractiveComponents(true) >> {}
 
         and:
         searchWindow.projectChoices.size() == projects.size() + 1

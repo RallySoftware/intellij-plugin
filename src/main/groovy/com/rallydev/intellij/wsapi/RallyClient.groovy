@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 
 class RallyClient {
-    private static final Logger log = Logger.getInstance(RallyClient)
+    private static final Logger log = Logger.getInstance(this)
 
     AsyncService asyncService
     HttpClient httpClient

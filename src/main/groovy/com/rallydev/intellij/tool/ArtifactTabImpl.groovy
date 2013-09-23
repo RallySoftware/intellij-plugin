@@ -48,7 +48,7 @@ class ArtifactTabImpl extends ArtifactTab {
 
     private void setupLabels() {
         Closure<TypeDefinition> call = {
-            TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName)
+            TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName, artifact.workspaceRef)
         }
 
         FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {

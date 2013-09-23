@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi.cache
 
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.intellij.openapi.components.ServiceManager
 import com.rallydev.intellij.wsapi.QueryBuilder
@@ -16,29 +17,36 @@ class TypeDefinitionCacheService {
     TypeDefinitionCache cache
 
     RallyClient rallyClient
-    GenericDao<TypeDefinition> typeDefinitionDao
+    Map<String, GenericDao<TypeDefinition>> typeDefinitionDaos
 
     TypeDefinitionCacheService(RallyClient rallyClient, TypeDefinitionCache cache) {
         this.rallyClient = rallyClient
         this.cache = cache
 
-        typeDefinitionDao = new GenericDao<TypeDefinition>(TypeDefinition)
+        typeDefinitionDaos = [:].withDefault { String workspaceRef ->
+            new GenericDao<TypeDefinition>(TypeDefinition, workspaceRef)
+        }
     }
 
     public static TypeDefinitionCacheService getInstance() {
-        return ServiceManager.getService(TypeDefinitionCacheService)
+        return ServiceManager.getService(this)
     }
 
-    TypeDefinition getTypeDefinition(String elementName) {
-        TypeDefinition typedef = cache.typeDefinitions[elementName]
+    TypeDefinition getTypeDefinition(String elementName, String workspaceRef) {
+        TypeDefinitionCache.TypeDefinitionEntry typeDefinitionEntry = cache.typeDefinitionsByWorkspace[workspaceRef]
+        if (!typeDefinitionEntry) {
+            cache.typeDefinitionsByWorkspace[workspaceRef] = typeDefinitionEntry = new TypeDefinitionCache.TypeDefinitionEntry()
+        }
+        TypeDefinition typedef = typeDefinitionEntry.typeDefinitions[elementName]
         if (!typedef) {
             //todo: Only happy path; add error handling
             ResultList<TypeDefinition> results =
-                typeDefinitionDao.find(new QueryBuilder().withConjunction('ElementName', eq, elementName))
+                typeDefinitionDaos[workspaceRef]
+                        .find(new QueryBuilder().withConjunction('ElementName', eq, elementName))
             typedef = results[0]
-            typedef.attributeDefinitions = loadAttributeDefinitions(typedef)
+            typedef.attributeDefinitions = loadAttributeDefinitions(typedef, workspaceRef)
 
-            cache.typeDefinitions[elementName] = typedef
+            typeDefinitionEntry.typeDefinitions[elementName] = typedef
         }
         typedef
     }
@@ -56,17 +64,24 @@ class TypeDefinitionCacheService {
     results.loadAllPages()
     results
     */
-    private Collection<AttributeDefinition> loadAttributeDefinitions(TypeDefinition typedef) {
-        Collection<AttributeDefinition> attributeDefinitions = cache.attributeDefinitions[typedef.objectID]
+
+    private Collection<AttributeDefinition> loadAttributeDefinitions(TypeDefinition typedef, String workspaceRef) {
+        TypeDefinitionCache.AttributeDefinitionEntry attributeDefinitionEntry = cache.attributeDefinitionsByWorkspace[workspaceRef]
+        if (!attributeDefinitionEntry) {
+            cache.attributeDefinitionsByWorkspace[workspaceRef] = attributeDefinitionEntry = new TypeDefinitionCache.AttributeDefinitionEntry()
+        }
+
+        Collection<AttributeDefinition> attributeDefinitions = attributeDefinitionEntry.attributeDefinitions[typedef.objectID]
         if (!attributeDefinitions) {
             attributeDefinitions = []
             typedef.raw['Attributes'].each { JsonObject raw ->
+                raw.add('Workspace', (JsonElement) typedef.raw['Workspace'])
                 AttributeDefinition definition = new AttributeDefinition()
                 definition.assignProperties(raw)
                 attributeDefinitions << definition
             }
 
-            cache.attributeDefinitions[typedef.objectID] = attributeDefinitions
+            attributeDefinitionEntry.attributeDefinitions[typedef.objectID] = attributeDefinitions
         }
         attributeDefinitions
     }
@@ -78,6 +93,5 @@ class TypeDefinitionCacheService {
 //            workspace = null
 //        }
 //    }
-
 
 }

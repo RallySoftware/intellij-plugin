@@ -25,6 +25,24 @@ class GenericDaoSpec extends BaseContainerSpec {
         requirement.objectID == '14345'
     }
 
+    def "findById uses workspace"() {
+        given:
+        RallyClient rallyClient = Mock(RallyClient)
+        GetRequest madeRequest = null
+        rallyClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
+            madeRequest = request
+            new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('single_requirement.json').text)
+        }
+        registerComponentInstance(RallyClient.name, rallyClient)
+
+        when:
+        GenericDao requirementDao = new GenericDao<Requirement>(Requirement, workspaceRef)
+        requirementDao.findById('14345')
+
+        then:
+        madeRequest.getUrl('http://www.test.com'.toURL()).contains("workspace=${workspaceRef}")
+    }
+
     def "order query param used in request included when order supplied"() {
         when:
         new GenericDao<Requirement>(Requirement).find('Name')
@@ -52,6 +70,23 @@ class GenericDaoSpec extends BaseContainerSpec {
 
         and:
         requirements.size() == 3
+    }
+
+    def "find includes workspace"() {
+        RallyClient rallyClient = Mock(RallyClient)
+        GetRequest madeRequest = null
+        rallyClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
+            madeRequest = request
+            new ApiResponse(GenericDaoSpec.classLoader.getResourceAsStream('multiple_requirements.json').text)
+        }
+        registerComponentInstance(RallyClient.name, rallyClient)
+
+        when:
+        GenericDao requirementDao = new GenericDao<Requirement>(Requirement, workspaceRef)
+        requirementDao.find()
+
+        then:
+        madeRequest.getUrl('http://www.test.com'.toURL()).contains("workspace=${workspaceRef}")
     }
 
     def "find with query makes request and parses response"() {

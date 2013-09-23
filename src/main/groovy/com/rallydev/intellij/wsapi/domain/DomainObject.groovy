@@ -12,11 +12,13 @@ import java.text.SimpleDateFormat
 abstract class DomainObject {
     private static final Logger log = Logger.getInstance(DomainObject)
     protected static final List<String> EXCLUDED_PROPERTIES =
-        ['class', 'apiEndpoint', 'excludedProperties', 'raw']
+        ['class', 'apiEndpoint', 'excludedProperties', 'workspaceRef', 'raw']
 
     String objectID
     Date creationDate
     String _ref
+
+    String workspaceRef
 
     JsonObject raw
 
@@ -31,11 +33,16 @@ abstract class DomainObject {
             !excludedProperties.contains(it.name) && !Modifier.isStatic(it.modifiers)
         }
 
+        assignWorkspaceRef(raw)
         assignableProperties.each { MetaProperty property ->
             if (raw[property.name.capitalize()]) {
                 assignProperty(property, (JsonElement) raw[property.name.capitalize()])
             }
         }
+    }
+
+    protected void assignWorkspaceRef(JsonObject raw) {
+        workspaceRef = raw.Workspace?._ref
     }
 
     protected void assignProperty(MetaProperty property, JsonElement json) {

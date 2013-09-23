@@ -31,12 +31,12 @@ class TypeDefinitionCacheServiceSpec extends BaseContainerSpec {
         List<TypeDefinition> typeDefinitions = new ResultListMock([
                 new TypeDefinition(displayName: 'Bug', raw: raw['QueryResult']['Results']['elements'][0])
         ])
-        cache.typeDefinitionDao = Mock(GenericDao, constructorArgs: [TypeDefinition]) {
+        cache.typeDefinitionDaos[workspaceRef] = Mock(GenericDao, constructorArgs: [TypeDefinition]) {
             1 * find(_ as QueryBuilder) >> { typeDefinitions }
         }
 
         when:
-        TypeDefinition typeDefinition = cache.getTypeDefinition(DEFECT.typeDefinitionElementName)
+        TypeDefinition typeDefinition = cache.getTypeDefinition(DEFECT.typeDefinitionElementName, workspaceRef)
 
         then:
         typeDefinition
@@ -61,15 +61,15 @@ class TypeDefinitionCacheServiceSpec extends BaseContainerSpec {
         List<TypeDefinition> typeDefinitions = new ResultListMock([
                 new TypeDefinition(displayName: 'Bug', raw: raw['QueryResult']['Results']['elements'][0])
         ])
-        cache.typeDefinitionDao = Mock(GenericDao, constructorArgs: [TypeDefinition])
+        cache.typeDefinitionDaos[workspaceRef] = Mock(GenericDao, constructorArgs: [TypeDefinition])
 
         when:
-        cache.getTypeDefinition(DEFECT.typeDefinitionElementName)
-        cache.getTypeDefinition(DEFECT.typeDefinitionElementName)
-        cache.getTypeDefinition(DEFECT.typeDefinitionElementName)
+        cache.getTypeDefinition(DEFECT.typeDefinitionElementName, workspaceRef)
+        cache.getTypeDefinition(DEFECT.typeDefinitionElementName, workspaceRef)
+        cache.getTypeDefinition(DEFECT.typeDefinitionElementName, workspaceRef)
 
         then: 'dao is only called once'
-        1 * cache.typeDefinitionDao.find(_ as QueryBuilder) >> { typeDefinitions }
+        1 * cache.typeDefinitionDaos[workspaceRef].find(_ as QueryBuilder) >> { typeDefinitions }
     }
 
 }
