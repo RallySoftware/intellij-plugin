@@ -1,11 +1,15 @@
 package com.rallydev.intellij.wsapi
 
 import com.google.common.util.concurrent.FutureCallback
+import com.intellij.util.net.HttpConfigurable
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.util.AsyncService
+import org.apache.commons.httpclient.HostConfiguration
 import org.apache.commons.httpclient.HttpClient
 import org.apache.commons.httpclient.HttpState
 import org.apache.commons.httpclient.HttpStatus
+import org.apache.commons.httpclient.UsernamePasswordCredentials
+import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.auth.InvalidCredentialsException
 import org.apache.commons.httpclient.methods.GetMethod
 import spock.util.concurrent.BlockingVariable
@@ -62,8 +66,10 @@ class RallyClientSpec extends BaseContainerSpec {
         given:
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
         client.httpClient = Mock(HttpClient)
-        client.httpClient.getState() >> { Mock(HttpState) }
-        client.httpClient.executeMethod(_) >> { HttpStatus.SC_OK }
+        client.httpClient.getState() >> Mock(HttpState)
+
+        and: 'executing client fakes return with empty json'
+        client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
                 getResponseBodyAsString() >> { '{}' }
@@ -93,6 +99,8 @@ class RallyClientSpec extends BaseContainerSpec {
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
         client.httpClient = Mock(HttpClient)
         client.httpClient.getState() >> { Mock(HttpState) }
+
+        and: 'executing client fakes return with empty json'
         client.httpClient.executeMethod(_) >> { HttpStatus.SC_UNAUTHORIZED }
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
@@ -122,6 +130,86 @@ class RallyClientSpec extends BaseContainerSpec {
 
         and: 'an exception is thrown'
         thrown(InvalidCredentialsException)
+    }
+
+    def "proxy is used when globally configured"() {
+        given:
+        String proxyHost = 'localhost'
+        Integer proxyPort = 8080
+
+        and: 'global proxy is configured'
+        registerComponentImplementation(HttpConfigurable)
+        HttpConfigurable.instance.USE_HTTP_PROXY = true
+        HttpConfigurable.instance.PROXY_HOST = proxyHost
+        HttpConfigurable.instance.PROXY_PORT = proxyPort
+
+        and:
+        RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> Mock(HttpState)
+
+        and: 'executing client fakes return with empty json'
+        client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
+        client.buildMethod(_ as GetRequest) >> {
+            Mock(GetMethod) {
+                getResponseBodyAsString() >> { '{}' }
+            }
+        }
+
+        and:
+        HostConfiguration hostConfiguration = Mock(HostConfiguration)
+        client.httpClient.getHostConfiguration() >> hostConfiguration
+
+        when:
+        client.makeRequest(Mock(GetRequest))
+
+        then: 'http client has proxy set'
+        1 * hostConfiguration.setProxy(proxyHost, proxyPort)
+    }
+
+    def "authenticated proxy is used when globally configured"() {
+        given:
+        String proxyPassword = 'monkey'
+        String proxyUserName = 'bob'
+
+        and: 'global proxy is configured with auth'
+        registerComponentInstance(HttpConfigurable.class.name, Mock(HttpConfigurable))
+        HttpConfigurable.instance.USE_HTTP_PROXY = true
+        HttpConfigurable.instance.PROXY_HOST = 'localhost'
+        HttpConfigurable.instance.PROXY_PORT = 8080
+
+        HttpConfigurable.instance.PROXY_AUTHENTICATION = true
+        HttpConfigurable.instance.getPlainProxyPassword() >> proxyPassword
+        HttpConfigurable.instance.PROXY_LOGIN = proxyUserName
+
+        and:
+        RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> Mock(HttpState)
+
+        UsernamePasswordCredentials proxyCredentials = null
+        client.httpClient.getState().setProxyCredentials(_, _) >> {AuthScope authscope, UsernamePasswordCredentials credentials ->
+            proxyCredentials = credentials
+        }
+
+        and: 'executing client fakes return with empty json'
+        client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
+        client.buildMethod(_ as GetRequest) >> {
+            Mock(GetMethod) {
+                getResponseBodyAsString() >> { '{}' }
+            }
+        }
+
+        and:
+        HostConfiguration hostConfiguration = Mock(HostConfiguration)
+        client.httpClient.getHostConfiguration() >> hostConfiguration
+
+        when:
+        client.makeRequest(Mock(GetRequest))
+
+        then: 'credentials set on client match config'
+        proxyCredentials.userName == proxyUserName
+        proxyCredentials.password == proxyPassword
     }
 
 }
