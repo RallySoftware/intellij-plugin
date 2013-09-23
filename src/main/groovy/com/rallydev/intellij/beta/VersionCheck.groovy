@@ -12,7 +12,7 @@ import com.rallydev.intellij.util.IdeNotification
 import java.util.concurrent.TimeUnit
 
 class VersionCheck implements ApplicationComponent {
-    static final Logger log = Logger.getInstance(VersionCheck)
+    static final Logger log = Logger.getInstance(this)
     static final String PAGES_URL = 'http://rallysoftware.github.io/intellij-plugin'
 
     @Override

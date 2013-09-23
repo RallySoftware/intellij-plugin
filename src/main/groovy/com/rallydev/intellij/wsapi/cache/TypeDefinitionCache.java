@@ -18,8 +18,9 @@ import java.util.Map;
 )
 public class TypeDefinitionCache implements PersistentStateComponent<TypeDefinitionCache> {
 
-    public Map<String, TypeDefinition> typeDefinitions = new HashMap<String, TypeDefinition>();
-    public Map<String, List<AttributeDefinition>> attributeDefinitions = new HashMap<String, List<AttributeDefinition>>();
+    //com.intellij.util.xmlb.XmlSerializer fails to serializes a map of maps, inner classes to deal with this
+    public Map<String, TypeDefinitionEntry> typeDefinitionsByWorkspace = new HashMap<String, TypeDefinitionEntry>();
+    public Map<String, AttributeDefinitionEntry> attributeDefinitionsByWorkspace = new HashMap<String, AttributeDefinitionEntry>();
 
     @Nullable
     @Override
@@ -29,9 +30,18 @@ public class TypeDefinitionCache implements PersistentStateComponent<TypeDefinit
 
     @Override
     public void loadState(TypeDefinitionCache state) {
-        typeDefinitions = new HashMap<String, TypeDefinition>();
-        attributeDefinitions = new HashMap<String, List<AttributeDefinition>>();
+        typeDefinitionsByWorkspace = new HashMap<String, TypeDefinitionEntry>();
+        attributeDefinitionsByWorkspace = new HashMap<String, AttributeDefinitionEntry>();
         XmlSerializerUtil.copyBean(state, this);
+    }
+
+
+    public static class TypeDefinitionEntry {
+        public Map<String, TypeDefinition> typeDefinitions = new HashMap<String, TypeDefinition>();
+    }
+
+    public static class AttributeDefinitionEntry {
+        public Map<String, List<AttributeDefinition>> attributeDefinitions = new HashMap<String, List<AttributeDefinition>>();
     }
 
 }

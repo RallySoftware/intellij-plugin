@@ -26,12 +26,12 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         given:
         ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
         List<Project> wsapiProjects = new ResultListMock([new Project(name: 'Project 1'), new Project(name: 'Project 2')])
-        cache.projectDao = Mock(GenericDao, constructorArgs: [Project]) {
+        cache.projectDaos[workspaceRef] = Mock(GenericDao, constructorArgs: [Project]) {
             1 * find(_ as String) >> { wsapiProjects }
         }
 
         when:
-        List<Project> projects = cache.cachedProjects
+        List<Project> projects = cache.getCachedProjects(workspaceRef)
 
         then:
         projects
@@ -43,73 +43,17 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
     def "cached value is used"() {
         given:
         ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
-        cache.projectDao = Mock(GenericDao, constructorArgs: [Project])
+        cache.projectDaos[workspaceRef] = Mock(GenericDao, constructorArgs: [Project])
 
         when:
-        cache.cachedProjects
-        cache.cachedProjects
-        cache.cachedProjects
+        cache.getCachedProjects(workspaceRef)
+        cache.getCachedProjects(workspaceRef)
+        cache.getCachedProjects(workspaceRef)
 
         then:
-        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
-    }
-
-    def "primed returns correct value based on cached"() {
-        given:
-        ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
-        cache.projectDao = Mock(GenericDao, constructorArgs: [Project])
-        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
-
-        expect:
-        !cache.isPrimed
-
-        when:
-        cache.cachedProjects
-
-        then:
-        cache.isPrimed
-    }
-
-    def "primed returns false when date expired"() {
-        given:
-        ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
-        cache.projectDao = Mock(GenericDao, constructorArgs: [Project])
-        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
-
-        when:
-        cache.cachedProjects
-
-        then:
-        cache.isPrimed
-
-        when:
-        cache.cache.loadedOn = new Date() - 1
-
-        then:
-        !cache.isPrimed
-    }
-
-    def "cached value expires after a day"() {
-        given:
-        ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
-        cache.projectDao = Mock(GenericDao, constructorArgs: [Project])
-
-        when:
-        cache.cachedProjects
-        cache.cachedProjects
-        cache.cachedProjects
-
-        then:
-        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
-
-        when:
-        cache.cache.loadedOn = new Date() - 1
-
-        and:
-        cache.cachedProjects
-
-        then:
-        1 * cache.projectDao.find('Name') >> { new ResultListMock() }
+        1 * cache.projectDaos[workspaceRef].find('Name') >> { a ->
+            new ResultListMock(["Thing one"])
+        }
     }
 
 }

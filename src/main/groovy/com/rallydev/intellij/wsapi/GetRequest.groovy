@@ -76,6 +76,11 @@ class GetRequest {
         return this
     }
 
+    GetRequest withWorkspace(String workspace) {
+        params['workspace'] = workspace
+        return this
+    }
+
     private baseUrl(URL server) {
         return "${server}/slm/webservice/${WSAPI_VERSION}"
     }

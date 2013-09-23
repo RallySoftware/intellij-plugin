@@ -21,8 +21,12 @@ import com.rallydev.intellij.wsapi.cache.ProjectCache
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCache
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
+import com.rallydev.intellij.wsapi.cache.WorkspaceCache
+import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
+import com.rallydev.intellij.wsapi.domain.Workspace
+import com.sun.tools.corba.se.idl.TypedefEntry
 import org.jetbrains.annotations.NotNull
 import org.picocontainer.MutablePicoContainer
 import spock.lang.Specification
@@ -38,14 +42,15 @@ abstract class BaseContainerSpec extends Specification {
 
     RallyClient recordingClient
     List<String> recordingClientRequests = []
+    String workspaceRef = "http://rally1.rallydev.com"
 
     RallyConfig config
     List<Project> projects = [new Project(name: 'Project1'), new Project(name: 'Project1')]
     Map<ApiEndpoint, TypeDefinition> typeDefinitions = [
-            (DEFECT): new TypeDefinition(displayName: 'Defect!'),
-            (HIERARCHICAL_REQUIREMENT): new TypeDefinition(displayName: 'User Story!'),
-            (PROJECT): new TypeDefinition(displayName: 'Project!'),
-            (TASK): new TypeDefinition(displayName: 'Task!')
+            (DEFECT): new TypeDefinition(displayName: 'Defect!', objectID: 1),
+            (HIERARCHICAL_REQUIREMENT): new TypeDefinition(displayName: 'User Story!', objectID: 2),
+            (PROJECT): new TypeDefinition(displayName: 'Project!', objectID: 3),
+            (TASK): new TypeDefinition(displayName: 'Task!', objectID: 4)
     ]
 
     def setup() {
@@ -67,6 +72,7 @@ abstract class BaseContainerSpec extends Specification {
         }
         picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
 
+        setupWorkspaces(recordingClient)
         setupProjects(recordingClient)
         setupTypeDefinitions(recordingClient)
 
@@ -91,24 +97,36 @@ abstract class BaseContainerSpec extends Specification {
         registerComponentImplementation(OpenArtifacts)
     }
 
+    protected void setupWorkspaces(RallyClient recordingClient) {
+        WorkspaceCache workspaceCache = new WorkspaceCache(workspaces: [
+                new Workspace(_ref: workspaceRef)
+        ])
+
+        WorkspaceCacheService workspaceCacheService = new WorkspaceCacheService(recordingClient, workspaceCache)
+
+        registerComponentInstance(WorkspaceCacheService.name, workspaceCacheService)
+    }
+
     protected void setupProjects(RallyClient recordingClient) {
-        ProjectCache projectCache = new ProjectCache(loadedOn: new Date(), projects: projects)
+        ProjectCache projectCache = new ProjectCache(projectsByWorkspace: [workspaceRef: projects])
         registerComponentInstance(projectCache)
 
         ProjectCacheService projectCacheService = Spy(ProjectCacheService, constructorArgs: [recordingClient, projectCache])
-        projectCacheService.getCachedProjects() >> { projects }
+        projectCacheService.getCachedProjects(_) >> { projects }
         registerComponentInstance(ProjectCacheService.name, projectCacheService)
     }
 
     protected void setupTypeDefinitions(RallyClient recordingClient) {
+        TypeDefinitionCache.TypeDefinitionEntry typeDefinitionEntry = new TypeDefinitionCache.TypeDefinitionEntry()
         TypeDefinitionCache typeDefinitionCache = new TypeDefinitionCache()
+        typeDefinitionCache.typeDefinitionsByWorkspace.put(workspaceRef, typeDefinitionEntry)
         typeDefinitions.each { key, value ->
-            typeDefinitionCache.typeDefinitions[key.typeDefinitionElementName] = value
+            key.typeDefinitionElementName
+            typeDefinitionEntry.typeDefinitions[key.typeDefinitionElementName] = value
         }
         registerComponentInstance(typeDefinitionCache)
 
         TypeDefinitionCacheService typeDefinitionCacheService = Spy(TypeDefinitionCacheService, constructorArgs: [recordingClient, typeDefinitionCache])
-        //projectCacheService.getCachedProjects() >> { projects }
         registerComponentInstance(TypeDefinitionCacheService.name, typeDefinitionCacheService)
     }
 
@@ -161,34 +179,6 @@ abstract class BaseContainerSpec extends Specification {
             password = null
         }
 
-    }
-
-    protected setupProject() {
-        //registerComponentImplementation(ProjectManager.name, ProjectManagerImpl)
-        LightPlatformTestCase intellijTestCase = new LightPlatformTestCase() {
-            String getName() {
-                'hello'
-            }
-
-            @Override
-            protected String getTestName(boolean lowercaseFirstLetter) {
-                String name = getName();
-                //assertTrue("Test name should start with 'test': " + name, name.startsWith("test"));
-                name = name.substring("test".length());
-//                if (name.length() > 0 && lowercaseFirstLetter && !UsefulTestCase.isAllUppercaseName(name)) {
-//                    name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-//                }
-                return name;
-            }
-
-
-        }
-        UIUtil.invokeAndWaitIfNeeded(new Runnable() {
-            @Override
-            void run() {
-                intellijTestCase.setUp()
-            }
-        })
     }
 
     String getName() {

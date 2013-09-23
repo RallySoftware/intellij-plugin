@@ -20,6 +20,10 @@ class AttributeDefinitionSpec extends Specification {
             }
         }[0]
 
+        and:
+        attributeRaw.add('Workspace', raw['QueryResult']['Results']['elements'][0]['Workspace'])
+
+        and:
         AttributeDefinition attribute = new AttributeDefinition()
         attribute.assignProperties(attributeRaw)
 

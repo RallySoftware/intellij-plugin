@@ -83,26 +83,10 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.typeChoices.model.objects.contains typeDefinitions[ApiEndpoint.HIERARCHICAL_REQUIREMENT].displayName
     }
 
-    def "setupWindow populates project choices when cache is primed"() {
+    def "setupWindow populates project choices asynchronously"() {
         given:
-        ProjectCacheService.instance.getIsPrimed() >> true
-
-        and:
-        SearchWindowImpl searchWindow = new SearchWindowImpl()
-        searchWindow.setupWindow()
-
-        expect:
-        searchWindow.projectChoices.size() == projects.size() + 1
-
-        and:
-        searchWindow.projectChoices.getItemAt(0).toString() == ''
-        searchWindow.projectChoices.getItemAt(1).toString() == projects[0].name
-        searchWindow.projectChoices.getItemAt(2).toString() == projects[1].name
-    }
-
-    def "setupWindow populates project choices asynchronously when cache not primed"() {
-        given:
-        ProjectCacheService.instance.getIsPrimed() >> false
+//        ProjectCacheService.instance.getIsPrimed() >> false
+        true
 
         and:
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
