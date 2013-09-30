@@ -60,10 +60,7 @@ class RallyClient {
         GetMethod method = buildMethod(request)
         log.info "Rally Client requesting\n\t\t${method.URI}"
 
-        log.info "Client: ${httpClient}"
-
         int code = httpClient.executeMethod(method)
-
         try {
             switch (code) {
                 case HttpStatus.SC_OK:
@@ -71,8 +68,15 @@ class RallyClient {
                 case HttpStatus.SC_UNAUTHORIZED:
                     onAuthError()
                     throw new InvalidCredentialsException('The provided user name and password are not valid')
+                case HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED:
+                    throw new RuntimeException("""
+The server returned [${code}]. This code indicates that you have IntelliJ configured to use a proxy server and the proxy
+server is requiring authentication, but proper authentication is not being sent to the proxy server. Double check
+settings 'HTTP Proxy' -> 'Proxy authentication'
+"""
+                    )
                 default:
-                    throw new RuntimeException('Unhandled response code')
+                    throw new RuntimeException("Unhandled response code [${code}]")
             }
         } finally {
             method.releaseConnection()

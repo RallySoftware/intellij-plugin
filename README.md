@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/RallySoftware/intellij-plugin.png)](https://waffle.io/RallySoftware/intellij-plugin)  
+[![Stories in Ready](https://badge.waffle.io/RallySoftware/intellij-plugin.png)](https://waffle.io/RallySoftware/intellij-plugin)
 ### Rally plugin for Intellij
 
 Implements Intellij's [task and contexts api](http://www.jetbrains.com/idea/webhelp/managing-tasks-and-context.html)
@@ -20,6 +20,16 @@ Getting started from a fresh checkout
 * Open project from within IntelliJ
 * Use the 'Rally ALM Tasks Integration' run configuration to launch
 * Use 'Build -> Prepare Plugin...' to generate an installable binary
+
+#### Update plugin checklist
+
+* Main project
+   * Increment plugin.xml version
+   * Build -> Prepare plugin
+* Pages project
+   * Update 'updatePlugins.xml', increment version and link
+   * Update version.json, increment version
+   * Update index.html, changelist and link
 
 ### Resources
 * http://www.jetbrains.org/display/IJOS/Source+Repository+Layout

@@ -32,12 +32,12 @@ class RallyClientSpec extends BaseContainerSpec {
 
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
         client.httpClient = Mock(HttpClient)
-        client.httpClient.getState() >> { Mock(HttpState) }
-        client.httpClient.executeMethod(_) >> { HttpStatus.SC_OK }
+        client.httpClient.getState() >> Mock(HttpState)
+        client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
         client.promptForPassword() >> { password }
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
-                getResponseBodyAsString() >> { '{}' }
+                getResponseBodyAsString() >> '{}'
             }
         }
 
@@ -53,7 +53,7 @@ class RallyClientSpec extends BaseContainerSpec {
         when:
         config.password = null
         password = 'second'
-        client.promptForPassword() >> { password }
+        client.promptForPassword() >> password
 
         and:
         client.makeRequest(Mock(GetRequest), Mock(FutureCallback))
@@ -72,7 +72,7 @@ class RallyClientSpec extends BaseContainerSpec {
         client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
-                getResponseBodyAsString() >> { '{}' }
+                getResponseBodyAsString() >> '{}'
             }
         }
 
@@ -92,6 +92,28 @@ class RallyClientSpec extends BaseContainerSpec {
         0 * client.promptForPassword() >> {}
     }
 
+    def "unhandled status codes include code in exception message"() {
+        given:
+        RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> { Mock(HttpState) }
+
+        and: 'executing client fakes return with empty json'
+        client.httpClient.executeMethod(_) >> 409
+        client.buildMethod(_ as GetRequest) >> {
+            Mock(GetMethod) {
+                getResponseBodyAsString() >> '{}'
+            }
+        }
+
+        when:
+        client.makeRequest(Mock(GetRequest))
+
+        then:
+        def e = thrown(RuntimeException)
+        e.message.contains('409')
+    }
+
     def "auth failure clears the cached password"() {
         BlockingVariable done = new BlockingVariable()
 
@@ -101,10 +123,10 @@ class RallyClientSpec extends BaseContainerSpec {
         client.httpClient.getState() >> { Mock(HttpState) }
 
         and: 'executing client fakes return with empty json'
-        client.httpClient.executeMethod(_) >> { HttpStatus.SC_UNAUTHORIZED }
+        client.httpClient.executeMethod(_) >> HttpStatus.SC_UNAUTHORIZED
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
-                getResponseBodyAsString() >> { '{}' }
+                getResponseBodyAsString() >> '{}'
             }
         }
 
@@ -152,7 +174,7 @@ class RallyClientSpec extends BaseContainerSpec {
         client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
-                getResponseBodyAsString() >> { '{}' }
+                getResponseBodyAsString() >> '{}'
             }
         }
 
@@ -196,7 +218,7 @@ class RallyClientSpec extends BaseContainerSpec {
         client.httpClient.executeMethod(_) >> HttpStatus.SC_OK
         client.buildMethod(_ as GetRequest) >> {
             Mock(GetMethod) {
-                getResponseBodyAsString() >> { '{}' }
+                getResponseBodyAsString() >> '{}'
             }
         }
 

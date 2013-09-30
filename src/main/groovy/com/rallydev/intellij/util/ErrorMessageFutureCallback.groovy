@@ -9,8 +9,12 @@ abstract class ErrorMessageFutureCallback<T> implements FutureCallback<T> {
         switch (throwable.class) {
             default:
                 IdeNotification.showError(
-                        'Error communicating with Rally',
-                        "Querying Rally failed; check the  ${throwable.message}"
+                        'Error communicating with Rally', """
+<dl style="margin: 0">
+    <dt>Querying Rally failed. Error:</dt>
+    <dd>${throwable.message}</dd>
+</dl>
+"""
                 )
         }
     }
