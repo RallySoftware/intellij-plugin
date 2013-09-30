@@ -35,11 +35,18 @@
         <applicationService serviceInterface="com.rallydev.intellij.task.RallyRepositoryManager"
                             serviceImplementation="com.rallydev.intellij.task.RallyRepositoryManager"/>
 
+        <!-- Facades over IntelliJ API -->
+        <applicationService serviceInterface="com.rallydev.intellij.facade.ActionToolbarFacade"
+                            serviceImplementation="com.rallydev.intellij.facade.ActionToolbarFacade"/>
+
         <!--Rally services-->
         <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
                             serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts"/>
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.RallyClient"
                             serviceImplementation="com.rallydev.intellij.wsapi.RallyClient"/>
+
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.CacheManager"
+                            serviceImplementation="com.rallydev.intellij.wsapi.cache.CacheManager"/>
 
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCache"
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache"/>

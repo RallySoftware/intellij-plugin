@@ -86,12 +86,9 @@ class TypeDefinitionCacheService {
         attributeDefinitions
     }
 
-//    void clear() {
-//        cache.with {
-//            projects = null
-//            loadedOn = null
-//            workspace = null
-//        }
-//    }
+    void clear() {
+        cache.typeDefinitionsByWorkspace.clear()
+        cache.attributeDefinitionsByWorkspace.clear()
+    }
 
 }

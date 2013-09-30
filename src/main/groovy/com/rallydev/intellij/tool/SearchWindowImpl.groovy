@@ -1,6 +1,10 @@
 package com.rallydev.intellij.tool
 
 import com.google.common.util.concurrent.FutureCallback
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.wm.ToolWindow
@@ -9,9 +13,11 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.intellij.util.ui.AsyncProcessIcon
+import com.rallydev.intellij.facade.ActionToolbarFacade
 import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
+import com.rallydev.intellij.wsapi.cache.CacheManager
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
@@ -19,13 +25,16 @@ import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
 import com.rallydev.intellij.wsapi.domain.Workspace
+import org.jetbrains.annotations.Nullable
 
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+import java.awt.*
 import java.awt.event.ItemEvent
 import java.awt.event.ItemListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.List
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -34,8 +43,7 @@ import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.TASK
 
-//todo: store checkbox's state
-class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
+class SearchWindowImpl extends SearchWindow implements ToolWindowFactory, Observer {
     static final Logger log = Logger.getInstance(SearchWindowImpl)
 
     ToolWindow myToolWindow
@@ -43,6 +51,20 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     ConcurrentMap<String, Boolean> asynchronousLoadingStates = new ConcurrentHashMap<>()
     ConcurrentMap<String, Class> typeChoicesToDomainClass = new ConcurrentHashMap<>()
     com.intellij.openapi.project.Project project
+
+    private final ArrayList<JComponent> componentListGeneric = [
+            searchBox, workspaceChoices
+    ]
+    private final ArrayList<JComponent> componentListWorkspace = [
+            typeChoices, projectChoices, formattedIDCheckBox, nameCheckBox,
+            descriptionCheckBox, searchButton, resultsTable
+    ]
+    private final ArrayList<JComponent> componentListInteractive = componentListGeneric + componentListWorkspace
+
+    SearchWindowImpl() {
+        super()
+        CacheManager.instance.addObserver(this)
+    }
 
     public void createToolWindowContent(com.intellij.openapi.project.Project project, ToolWindow toolWindow) {
         this.project = project
@@ -53,15 +75,32 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     void setupWindow() {
+        setupToolbar()
         setupTable()
         installSearchListener()
         installWorkspaceListener()
 
-        toggleInteractiveGenericComponents(false)
-        toggleInteractiveWorkspaceComponents(false)
-        showLoadingAnimation('Loading Rally workspaces...')
+        //now kick off asynchronous loading of Rally data
+        loadWorkspaces()
+    }
 
+    private void loadWorkspaces() {
+        SwingService.instance.disableComponents(componentListInteractive)
+        showLoadingAnimation('Loading Rally workspaces...')
         setupWorkspaceChoices()
+    }
+
+    private void setupToolbar() {
+        ActionToolbar toolbar = ActionToolbarFacade.instance.createActionToolbar([
+                new AnAction("Refresh Rally configuration", "Reload Rally workspaces and projects", AllIcons.Actions.Refresh) {
+                    @Override
+                    public void actionPerformed(AnActionEvent e) {
+                        CacheManager.instance.clearAllCaches()
+                    }
+                }
+        ])
+
+        toolbarPanel.add(toolbar.getComponent())
     }
 
     private void setupTable() {
@@ -87,6 +126,11 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         model.addColumn('Project')
     }
 
+    @Override
+    void update(Observable observable, @Nullable Object o) {
+        loadWorkspaces()
+    }
+
     private void installSearchListener() {
         searchButton.addActionListener(new SearchListener(window: this))
         //todo: ?. for test - explore IntelliJ test framework to better handle
@@ -98,7 +142,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
             @Override
             void itemStateChanged(ItemEvent itemEvent) {
                 if (itemEvent.stateChange == ItemEvent.SELECTED) {
-                    toggleInteractiveWorkspaceComponents(false)
+                    SwingService.instance.disableComponents(componentListWorkspace)
                     showLoadingAnimation('Loading workspace data...')
                     asynchronousLoadingStates['setup'] = false
 
@@ -116,6 +160,8 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
     }
 
     private void setupWorkspaceChoices() {
+        workspaceChoices.model = new DefaultComboBoxModel()
+
         Closure<List<Workspace>> call = {
             return WorkspaceCacheService.instance.cachedWorkspaces
         }
@@ -126,7 +172,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                     workspaces.each { workspace ->
                         workspaceChoices.addItem(new WorkspaceItem(workspace: workspace))
                     }
-                    toggleInteractiveGenericComponents(true)
+                    SwingService.instance.enableComponents(componentListGeneric)
                     setStatus('Loaded workspaces')
                 }
             }
@@ -135,7 +181,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
                 super.onFailure(error)
                 setStatus('Failed to load workspaces')
                 //todo: need a refresh/try again button
-                toggleInteractiveGenericComponents(true)
+                SwingService.instance.enableComponents(componentListGeneric)
             }
         }
 
@@ -284,39 +330,7 @@ class SearchWindowImpl extends SearchWindow implements ToolWindowFactory {
         })
         if (ready) {
             setStatus('Loaded Rally configuration')
-            SwingService.instance.queueForUiThread {
-                toggleInteractiveComponents(true)
-            }
-        }
-    }
-
-    void toggleInteractiveGenericComponents(Boolean enabled) {
-        SwingService.instance.doInUiThread {
-            [
-                    searchBox, workspaceChoices
-            ].each { JComponent component ->
-                component.enabled = enabled
-            }
-        }
-    }
-
-    void toggleInteractiveWorkspaceComponents(Boolean enabled) {
-        SwingService.instance.doInUiThread {
-            [
-                    typeChoices, projectChoices, formattedIDCheckBox, nameCheckBox,
-                    descriptionCheckBox, searchButton, resultsTable
-            ].each { JComponent component ->
-                component.enabled = enabled
-            }
-        }
-    }
-
-    void toggleInteractiveComponents(Boolean enabled) {
-        [
-                searchBox, typeChoices, projectChoices, formattedIDCheckBox, nameCheckBox,
-                descriptionCheckBox, searchButton, resultsTable, statusPanel
-        ].each { JComponent component ->
-            component.enabled = enabled
+            SwingService.instance.enableComponents(componentListInteractive)
         }
     }
 

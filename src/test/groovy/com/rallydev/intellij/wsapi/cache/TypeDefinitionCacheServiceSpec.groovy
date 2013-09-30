@@ -18,6 +18,12 @@ class TypeDefinitionCacheServiceSpec extends BaseContainerSpec {
         registerComponentImplementation(TypeDefinitionCacheService)
     }
 
+    def "getInstance returns registered instance"() {
+        expect:
+        TypeDefinitionCacheService.getInstance()
+        TypeDefinitionCacheService.getInstance().class == TypeDefinitionCacheService
+    }
+
     def "typeDefinitions are loaded from rally"() {
         given:
         TypeDefinitionCacheService cache = ServiceManager.getService(TypeDefinitionCacheService.class)
@@ -70,6 +76,35 @@ class TypeDefinitionCacheServiceSpec extends BaseContainerSpec {
 
         then: 'dao is only called once'
         1 * cache.typeDefinitionDaos[workspaceRef].find(_ as QueryBuilder) >> { typeDefinitions }
+    }
+
+    def "cache clears out cached values"() {
+        given:
+        TypeDefinitionCacheService cache = ServiceManager.getService(TypeDefinitionCacheService.class)
+
+        and: 'raw json is a saved wsapi response'
+        JsonElement raw = new JsonParser().parse(
+                TypeDefinitionCacheServiceSpec.classLoader.getResourceAsStream('defect_typedef.json').text
+        )
+
+        and: 'mock out typeDefinition daos'
+        cache.typeDefinitionDaos[workspaceRef] = Mock(GenericDao, constructorArgs: [TypeDefinition])
+
+        and: 'typeDefinition dao returns mock result list with raw json'
+        List<TypeDefinition> typeDefinitions = new ResultListMock([
+                new TypeDefinition(displayName: 'Bug', raw: raw['QueryResult']['Results']['elements'][0])
+        ])
+        cache.typeDefinitionDaos[workspaceRef].find(_ as QueryBuilder) >> { typeDefinitions }
+        cache.getTypeDefinition(DEFECT.typeDefinitionElementName, workspaceRef)
+
+        expect: 'cache is primed with the typeDefinition'
+        cache.cache.typeDefinitionsByWorkspace[workspaceRef]
+
+        when:
+        cache.clear()
+
+        then: 'cache is clear'
+        !cache.cache.typeDefinitionsByWorkspace[workspaceRef]
     }
 
 }

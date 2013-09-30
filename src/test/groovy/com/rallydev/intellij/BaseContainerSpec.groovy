@@ -6,9 +6,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.testFramework.LightPlatformTestCase
 import com.intellij.testFramework.UsefulTestCase
-import com.intellij.util.ui.UIUtil
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.tool.OpenArtifacts
 import com.rallydev.intellij.util.AsyncService
@@ -26,7 +24,6 @@ import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
 import com.rallydev.intellij.wsapi.domain.Workspace
-import com.sun.tools.corba.se.idl.TypedefEntry
 import org.jetbrains.annotations.NotNull
 import org.picocontainer.MutablePicoContainer
 import spock.lang.Specification
@@ -76,14 +73,14 @@ abstract class BaseContainerSpec extends Specification {
         setupProjects(recordingClient)
         setupTypeDefinitions(recordingClient)
 
-        SwingService swingService = new SwingService()
-        swingService.metaClass.doInUiThread = { Closure closure ->
+        SwingService swingService = Spy(SwingService)
+        swingService.doInUiThread(_ as Closure) >> { Closure closure ->
             closure()
         }
-        swingService.metaClass.queueForUiThread = { Closure closure ->
+        swingService.queueForUiThread(_ as Closure) >> { Closure closure ->
             closure()
         }
-        registerComponentInstance(swingService)
+        registerComponentInstance(SwingService.name, swingService)
 
         AsyncService asyncService = new AsyncService()
         asyncService.metaClass.schedule = { Closure callable, FutureCallback callback ->

@@ -18,7 +18,6 @@ import java.util.Map;
 )
 public class ProjectCache implements PersistentStateComponent<ProjectCache> {
 
-    public List<Project> projects = new LinkedList<Project>();
     public Map<String, List<Project>> projectsByWorkspace = new HashMap<String, List<Project>>();
 
     @Nullable

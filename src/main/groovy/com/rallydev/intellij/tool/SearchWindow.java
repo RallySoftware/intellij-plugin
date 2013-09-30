@@ -7,6 +7,9 @@ public class SearchWindow {
     protected JPanel myToolWindowContent;
 
     protected JTabbedPane searchPane;
+    protected JPanel searchPanel;
+    protected JPanel toolbarPanel;
+
     protected JTextField searchBox;
 
     protected JComboBox workspaceChoices;
