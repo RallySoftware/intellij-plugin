@@ -2,5 +2,6 @@
     <!--<plugin id="rally-intellij" url="builds/rally-intellij-plugin-0.1.zip" version="0.1"/>-->
     <!--<plugin id="rally-intellij" url="builds/rally-intellij-plugin-0.2.zip" version="0.2"/>-->
     <!--<plugin id="rally-intellij" url="builds/rally-intellij-plugin-0.3.zip" version="0.3"/>-->
-    <plugin id="rally-intellij" url="builds/rally-intellij-plugin-0.4.zip" version="0.4"/>
+    <!--<plugin id="rally-intellij" url="builds/rally-intellij-plugin-0.4.zip" version="0.4"/>-->
+    <plugin id="rally-intellij" url="builds/rally-intellij-plugin-0.5.zip" version="0.5"/>
 </plugins>
