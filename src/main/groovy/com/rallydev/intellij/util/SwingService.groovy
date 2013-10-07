@@ -39,4 +39,20 @@ class SwingService {
         comboBox.insertItemAt(choice, position)
     }
 
+    void disableComponents(List<JComponent> components) {
+        toggleComponents(components, false)
+    }
+
+    void enableComponents(List<JComponent> components) {
+        toggleComponents(components, true)
+    }
+
+    private void toggleComponents(components, boolean enabled) {
+        doInUiThread {
+            components.each { JComponent component ->
+                component.enabled = enabled
+            }
+        }
+    }
+
 }
