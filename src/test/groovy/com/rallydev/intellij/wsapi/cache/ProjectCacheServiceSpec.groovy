@@ -13,6 +13,12 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         registerComponentImplementation(ProjectCacheService)
     }
 
+    def "getInstance returns registered instance"() {
+        expect:
+        ProjectCacheService.getInstance()
+        ProjectCacheService.getInstance().class == ProjectCacheService
+    }
+
     def "DI is correctly setup"() {
         when:
         ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
@@ -54,6 +60,27 @@ class ProjectCacheServiceSpec extends BaseContainerSpec {
         1 * cache.projectDaos[workspaceRef].find('Name') >> { a ->
             new ResultListMock(["Thing one"])
         }
+    }
+
+    def "can clear the cache"() {
+        given:
+        ProjectCacheService cache = ServiceManager.getService(ProjectCacheService.class)
+        cache.projectDaos[workspaceRef] = Mock(GenericDao, constructorArgs: [Project])
+
+        and:
+        cache.projectDaos[workspaceRef].find('Name') >> { a ->
+            new ResultListMock(["Thing one"])
+        }
+        cache.getCachedProjects(workspaceRef)
+
+        expect:
+        cache.cache.projectsByWorkspace[workspaceRef]
+
+        when:
+        cache.clear()
+
+        then:
+        !cache.cache.projectsByWorkspace[workspaceRef]
     }
 
 }
