@@ -51,6 +51,12 @@ public enum ApiEndpoint {
                 return "Task";
             case PROJECT:
                 return "Project";
+            case ATTRIBUTE_DEFINITION:
+                return "AttributeDefinition";
+            case TYPE_DEFINITION:
+                return "TypeDefinition";
+            case WORKSPACE:
+                return "Workspace";
             default:
                 throw new IllegalArgumentException("No type definition elementName for " + this);
         }

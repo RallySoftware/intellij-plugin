@@ -26,7 +26,8 @@ class ArtifactWindowImpl implements ToolWindowFactory, Observer {
 
     //todo: Cache by id & refresh if already there
     void addTab(Artifact artifact) {
-        ArtifactTabImpl tab = new ArtifactTabImpl(artifact, project)
+        ArtifactTabImpl2 tab = new ArtifactTabImpl2(artifact, project)
+        tab.setup()
         ContentImpl content = new ContentImpl(tab.contentPanel, artifact.formattedID, true)
         myToolWindow.getContentManager().addContent(content)
         myToolWindow.getContentManager().setSelectedContent(content, true)

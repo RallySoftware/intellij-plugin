@@ -2,6 +2,9 @@ package com.rallydev.intellij.wsapi
 
 import com.google.common.util.concurrent.FutureCallback
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.SpecUtils
+import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
+import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
 import spock.util.concurrent.BlockingVariable
 
@@ -12,6 +15,12 @@ class SearchSpec extends BaseContainerSpec {
     FutureCallback<ResultList> callback
 
     def setup() {
+        DaoResponseUnmarshaller daoResponseUnmarshaller = Mock(DaoResponseUnmarshaller)
+        daoResponseUnmarshaller.buildDomainObject(_ as Class, _ as ApiResponse) >> { Class originDomainClass, ApiResponse response ->
+            return originDomainClass.newInstance()
+        }
+        registerComponentInstance(DaoResponseUnmarshaller.name, daoResponseUnmarshaller)
+
         callback = new FutureCallback<ResultList>() {
             @Override
             void onSuccess(ResultList v) {

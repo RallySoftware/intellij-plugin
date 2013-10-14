@@ -10,6 +10,7 @@ class AttributeDefinition extends Artifact {
     String state
     String _type = TYPE
     List<String> allowedValues = new LinkedList<String>()
+    String elementName
 
     @Override
     ApiEndpoint getApiEndpoint() {

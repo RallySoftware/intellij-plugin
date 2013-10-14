@@ -7,6 +7,7 @@ class Requirement extends Artifact {
     static final String TYPE = 'HierarchicalRequirement'
 
     String _type = TYPE
+    String scheduleState
 
     @Override
     ApiEndpoint getApiEndpoint() {

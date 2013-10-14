@@ -38,6 +38,10 @@
         <!--Rally services-->
         <applicationService serviceInterface="com.rallydev.intellij.tool.OpenArtifacts"
                             serviceImplementation="com.rallydev.intellij.tool.OpenArtifacts"/>
+
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller"
+                            serviceImplementation="com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller"/>
+
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.RallyClient"
                             serviceImplementation="com.rallydev.intellij.wsapi.RallyClient"/>
 

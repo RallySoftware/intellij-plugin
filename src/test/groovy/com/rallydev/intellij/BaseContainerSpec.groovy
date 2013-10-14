@@ -23,6 +23,9 @@ import com.rallydev.intellij.wsapi.cache.TypeDefinitionCache
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.cache.WorkspaceCache
 import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
+import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
+import com.rallydev.intellij.wsapi.domain.Artifact
+import com.rallydev.intellij.wsapi.domain.AttributeDefinition
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
 import com.rallydev.intellij.wsapi.domain.Workspace
@@ -48,7 +51,16 @@ abstract class BaseContainerSpec extends Specification {
     List<Project> projects = [new Project(name: 'Project1'), new Project(name: 'Project1')]
     Map<ApiEndpoint, TypeDefinition> typeDefinitions = [
             (DEFECT): new TypeDefinition(displayName: 'Defect!', objectID: 1),
-            (HIERARCHICAL_REQUIREMENT): new TypeDefinition(displayName: 'User Story!', objectID: 2),
+            (HIERARCHICAL_REQUIREMENT): new TypeDefinition(
+                    displayName: 'User Story!', objectID: 2,
+                    attributeDefinitions:[
+                            new AttributeDefinition(
+                                    elementName: "ScheduleState",
+                                    name: "Schedule State",
+                                    allowedValues: ["Defined", "In-Progress", "Completed", "Accepted"]
+                            )
+                    ]
+            ),
             (PROJECT): new TypeDefinition(displayName: 'Project!', objectID: 3),
             (TASK): new TypeDefinition(displayName: 'Task!', objectID: 4)
     ]
@@ -70,7 +82,7 @@ abstract class BaseContainerSpec extends Specification {
             recordingClientRequests << request.getUrl(config.url.toURL())
             return new ApiResponse(SpecUtils.minimalResponseJson)
         }
-        picoContainer.registerComponentInstance(RallyClient.name, recordingClient)
+        registerComponentInstance(RallyClient.name, recordingClient)
 
         setupWorkspaces(recordingClient)
         setupProjects(recordingClient)

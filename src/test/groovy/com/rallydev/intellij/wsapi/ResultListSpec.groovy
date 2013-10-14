@@ -1,9 +1,14 @@
 package com.rallydev.intellij.wsapi
 
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
 import com.rallydev.intellij.wsapi.domain.Requirement
 
 class ResultListSpec extends BaseContainerSpec {
+
+    def setup() {
+        registerComponentImplementation(DaoResponseUnmarshaller)
+    }
 
     void setupClient() {
         RallyClient client = Mock(RallyClient) {

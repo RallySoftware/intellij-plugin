@@ -1,6 +1,7 @@
 package com.rallydev.intellij.wsapi.dao
 
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.SpecUtils
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.GetRequest
 import com.rallydev.intellij.wsapi.QueryBuilder
@@ -8,6 +9,13 @@ import com.rallydev.intellij.wsapi.RallyClient
 import com.rallydev.intellij.wsapi.domain.Requirement
 
 class GenericDaoSpec extends BaseContainerSpec {
+
+    def setup() {
+        recordingClient = Mock(RallyClient)
+        registerComponentInstance(RallyClient.name, recordingClient)
+
+        registerComponentImplementation(DaoResponseUnmarshaller)
+    }
 
     def "findById makes request and parses response"() {
         given:
@@ -44,6 +52,12 @@ class GenericDaoSpec extends BaseContainerSpec {
     }
 
     def "order query param used in request included when order supplied"() {
+        given:
+        recordingClient.makeRequest(_ as GetRequest) >> { GetRequest request ->
+            recordingClientRequests << request.getUrl(config.url.toURL())
+            return new ApiResponse(SpecUtils.getTypedMinimalResponseJson('HierarchicalRequirement'))
+        }
+
         when:
         new GenericDao<Requirement>(Requirement).find('Name')
 

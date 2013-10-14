@@ -29,7 +29,7 @@ class GenericDao<T extends DomainObject> {
         if(workspaceRef) {
             request.withWorkspace(workspaceRef)
         }
-        fromSingleResponse(RallyClient.getInstance().makeRequest(request))
+        DaoResponseUnmarshaller.instance.buildDomainObject(domainClass, RallyClient.getInstance().makeRequest(request))
     }
 
     ResultList<T> find(String order, int pageSize = GetRequest.MAX_PAGE_SIZE) {
@@ -80,13 +80,6 @@ class GenericDao<T extends DomainObject> {
             request.withWorkspace(workspaceRef)
         }
         request
-    }
-
-    private T fromSingleResponse(ApiResponse response) {
-        T domainObject = domainClass.newInstance()
-        JsonObject root = (JsonObject) response.json[domainObject.apiEndpoint.jsonRoot]
-        domainObject.assignProperties(root)
-        return domainObject
     }
 
 }

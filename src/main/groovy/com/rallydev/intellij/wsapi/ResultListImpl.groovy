@@ -1,6 +1,7 @@
 package com.rallydev.intellij.wsapi
 
 import com.google.gson.JsonObject
+import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
 import com.rallydev.intellij.wsapi.domain.DomainObject
 
 class ResultListImpl<T extends DomainObject> extends ArrayList<T> implements ResultList<T> {
@@ -36,8 +37,7 @@ class ResultListImpl<T extends DomainObject> extends ArrayList<T> implements Res
 
     private void parseResponse(ApiResponse response) {
         response.results.each { JsonObject json ->
-            T domainObject = domainClass.newInstance()
-            domainObject.assignProperties(json)
+            T domainObject = DaoResponseUnmarshaller.instance.buildDomainObject(domainClass, json)
             this << domainObject
         }
         totalSize = response.count

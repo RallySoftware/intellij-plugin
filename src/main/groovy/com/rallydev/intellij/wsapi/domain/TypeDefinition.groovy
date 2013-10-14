@@ -21,4 +21,8 @@ class TypeDefinition extends DomainObject {
         return ApiEndpoint.TYPE_DEFINITION
     }
 
+    AttributeDefinition findAttributeDefinition(String elementName) {
+        return attributeDefinitions.find { it.elementName == elementName }
+    }
+
 }
