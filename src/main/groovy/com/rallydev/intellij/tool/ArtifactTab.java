@@ -10,18 +10,11 @@ public class ArtifactTab {
 
     protected JLabel header;
 
-    protected JLabel projectLabel;
-    protected JLabel projectValue;
-
-    protected JLabel lastUpdatedLabel;
-    protected JTextPane description;
-    protected JTextPane notes;
+    protected JPanel dynamicFieldsPanel;
 
     protected JButton viewInRallyButton;
     protected JPanel buttonPanel;
     protected JButton openTaskContextButton;
-
-    protected JPanel dynamicFieldPanel;
 
     protected ArtifactTab() { }
 
