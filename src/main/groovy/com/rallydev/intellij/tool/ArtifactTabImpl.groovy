@@ -64,10 +64,10 @@ class ArtifactTabImpl extends ArtifactTab {
         dynamicFieldsPanel.setLayout(new GridBagLayout())
 
         setupDefaultFields()
-        setupLabels()
+        populateDefaultFields()
+        loadLabels()
 
-        setupDynamicFields()
-        populateFields()
+        setupAndPopulateDynamicFields()
 
         setupViewButton()
         openTaskContextButton.addActionListener(new OpenTaskListener(project, artifact))
@@ -90,7 +90,21 @@ class ArtifactTabImpl extends ArtifactTab {
         dynamicFieldsPanel.repaint()
     }
 
-    private void setupLabels() {
+    private void populateDefaultFields() {
+        header.text = "${artifact.formattedID} - ${artifact.name}"
+        projectValue.text = artifact.projectName
+        lastUpdated.text = artifact.formattedLastUpdateDate
+
+        description.text = "<html>${artifact.description ?: ''}</html>"
+        description.border = new EmptyBorder(5, 5, 5, 5)
+
+        notes.text = "<html>${artifact.notes ?: ''}</html>"
+        notes.border = new EmptyBorder(5, 5, 5, 5)
+    }
+
+
+
+    private void loadLabels() {
         Closure<TypeDefinition> call = {
             TypeDefinitionCacheService.instance.getTypeDefinition(PROJECT.typeDefinitionElementName, artifact.workspaceRef)
         }
@@ -110,39 +124,15 @@ class ArtifactTabImpl extends ArtifactTab {
         AsyncService.instance.schedule(call, callback)
     }
 
-    private void setupDynamicFields() {
+    private void setupAndPopulateDynamicFields() {
         if (artifact instanceof Requirement) {
-            Requirement requirement = (Requirement) artifact
             Closure<TypeDefinition> call = {
                 TypeDefinitionCacheService.instance.getTypeDefinition(HIERARCHICAL_REQUIREMENT.typeDefinitionElementName, artifact.workspaceRef)
             }
 
             FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
                 void onSuccess(TypeDefinition typeDefinition) {
-                    //setup schedule state
-                    AttributeDefinition scheduleStateAttributeDefinition = typeDefinition.findAttributeDefinition("ScheduleState")
-                    JComboBox scheduleStateComboBox = new JComboBox()
-                    dynamicFields.put("scheduleState", scheduleStateComboBox)
-                    scheduleStateAttributeDefinition.allowedValues.each { allowedValue ->
-                        scheduleStateComboBox.addItem(allowedValue)
-                    }
-
-                    //populate
-                    scheduleStateComboBox.selectedItem = requirement.scheduleState
-
-                    SwingService.instance.queueForUiThread {
-                        dynamicFieldsPanel.add(
-                                new JLabel(scheduleStateAttributeDefinition.name),
-                                getLabelConstraints(100)
-                        )
-                        dynamicFieldsPanel.add(
-                                scheduleStateComboBox,
-                                getFieldSimpleConstraints(100, [weightx: 0, fill: GridBagConstraints.NONE])
-                        )
-
-                        dynamicFieldsPanel.revalidate()
-                        dynamicFieldsPanel.repaint()
-                    }
+                    populateRequirementFields(typeDefinition, (Requirement) artifact)
                 }
 
                 void onFailure(Throwable error) {
@@ -154,16 +144,30 @@ class ArtifactTabImpl extends ArtifactTab {
         }
     }
 
-    private void populateFields() {
-        header.text = "${artifact.formattedID} - ${artifact.name}"
-        projectValue.text = artifact.projectName
-        lastUpdated.text = artifact.formattedLastUpdateDate
+    private void populateRequirementFields(TypeDefinition typeDefinition, Requirement requirement) {
+        //setup schedule state
+        AttributeDefinition scheduleStateAttributeDefinition = typeDefinition.findAttributeDefinition("ScheduleState")
+        JComboBox scheduleStateComboBox = new JComboBox()
+        dynamicFields.put("scheduleState", scheduleStateComboBox)
+        scheduleStateAttributeDefinition.allowedValues.each { allowedValue ->
+            scheduleStateComboBox.addItem(allowedValue)
+        }
 
-        description.text = "<html>${artifact.description ?: ''}</html>"
-        description.border = new EmptyBorder(5, 5, 5, 5)
+        SwingService.instance.queueForUiThread {
+            scheduleStateComboBox.selectedItem = requirement.scheduleState
 
-        notes.text = "<html>${artifact.notes ?: ''}</html>"
-        notes.border = new EmptyBorder(5, 5, 5, 5)
+            dynamicFieldsPanel.add(
+                    new JLabel(scheduleStateAttributeDefinition.name),
+                    getLabelConstraints(100)
+            )
+            dynamicFieldsPanel.add(
+                    scheduleStateComboBox,
+                    getFieldSimpleConstraints(100, [weightx: 0, fill: GridBagConstraints.NONE])
+            )
+
+            dynamicFieldsPanel.revalidate()
+            dynamicFieldsPanel.repaint()
+        }
     }
 
     private void setupViewButton() {
