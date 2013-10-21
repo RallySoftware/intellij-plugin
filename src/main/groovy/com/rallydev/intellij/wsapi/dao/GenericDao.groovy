@@ -2,13 +2,12 @@ package com.rallydev.intellij.wsapi.dao
 
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.gson.JsonObject
 import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.ApiResponse
-import com.rallydev.intellij.wsapi.GetRequest
+import com.rallydev.intellij.wsapi.client.GetRequest
 import com.rallydev.intellij.wsapi.QueryBuilder
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.ResultList
 import com.rallydev.intellij.wsapi.ResultListImpl
 import com.rallydev.intellij.wsapi.domain.DomainObject

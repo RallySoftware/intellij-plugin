@@ -3,9 +3,9 @@ package com.rallydev.intellij.wsapi.dao
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.SpecUtils
 import com.rallydev.intellij.wsapi.ApiResponse
-import com.rallydev.intellij.wsapi.GetRequest
+import com.rallydev.intellij.wsapi.client.GetRequest
 import com.rallydev.intellij.wsapi.QueryBuilder
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.domain.Requirement
 
 class GenericDaoSpec extends BaseContainerSpec {

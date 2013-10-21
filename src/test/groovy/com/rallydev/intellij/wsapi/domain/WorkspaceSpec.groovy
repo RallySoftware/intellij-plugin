@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 class WorkspaceSpec extends Specification {
 
-    def "properties properly assignable from json"() {
+    def 'properties properly assignable from json'() {
         given:
         JsonElement json  = new JsonParser().parse(RequirementSpec.classLoader.getResourceAsStream('workspace_single.json').text)
 

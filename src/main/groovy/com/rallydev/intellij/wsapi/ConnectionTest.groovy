@@ -1,5 +1,9 @@
 package com.rallydev.intellij.wsapi
 
+import com.rallydev.intellij.wsapi.client.GetRequest
+import com.rallydev.intellij.wsapi.client.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClientConfigurable
+
 class ConnectionTest {
 
     RallyClient client

@@ -1,4 +1,4 @@
-package com.rallydev.intellij.wsapi
+package com.rallydev.intellij.wsapi.client
 
 import com.rallydev.intellij.util.AsyncService
 

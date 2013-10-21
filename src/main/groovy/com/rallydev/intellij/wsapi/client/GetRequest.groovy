@@ -1,11 +1,11 @@
-package com.rallydev.intellij.wsapi
+package com.rallydev.intellij.wsapi.client
 
+import com.rallydev.intellij.wsapi.ApiEndpoint
 import groovy.transform.AutoClone
 import org.apache.commons.httpclient.util.URIUtil
 
 @AutoClone
-class GetRequest {
-    static final String WSAPI_VERSION = '1.43'
+class GetRequest implements RallyRequest {
     static int MAX_PAGE_SIZE = 200
     static int MIN_PAGE_SIZE = 1
 
@@ -82,7 +82,7 @@ class GetRequest {
     }
 
     private baseUrl(URL server) {
-        return "${server}/slm/webservice/${WSAPI_VERSION}"
+        return "${server}/slm/webservice/${RallyClient.WSAPI_VERSION}"
     }
 
     private int between(int number, int min, int max) {

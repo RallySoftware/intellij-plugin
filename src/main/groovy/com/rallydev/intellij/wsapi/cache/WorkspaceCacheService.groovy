@@ -1,7 +1,7 @@
 package com.rallydev.intellij.wsapi.cache
 
 import com.intellij.openapi.components.ServiceManager
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.dao.GenericDao
 import com.rallydev.intellij.wsapi.domain.Workspace
 

@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.intellij.openapi.components.ServiceManager
 import com.rallydev.intellij.wsapi.QueryBuilder
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.ResultList
 import com.rallydev.intellij.wsapi.dao.GenericDao
 import com.rallydev.intellij.wsapi.domain.AttributeDefinition

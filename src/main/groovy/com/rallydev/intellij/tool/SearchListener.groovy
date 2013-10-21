@@ -3,7 +3,7 @@ package com.rallydev.intellij.tool
 import com.google.common.util.concurrent.FutureCallback
 import com.intellij.openapi.application.ApplicationManager
 import com.rallydev.intellij.util.ErrorMessageFutureCallback
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.ResultList
 import com.rallydev.intellij.wsapi.Search
 import com.rallydev.intellij.wsapi.domain.Artifact

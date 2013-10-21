@@ -1,7 +1,7 @@
 package com.rallydev.intellij.task
 
 import com.intellij.tasks.TaskType
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.ResultListMock
 import com.rallydev.intellij.wsapi.dao.GenericDao
 import com.rallydev.intellij.wsapi.domain.Artifact

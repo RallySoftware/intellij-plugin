@@ -1,5 +1,6 @@
 package com.rallydev.intellij.wsapi.domain
 
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.intellij.openapi.diagnostic.Logger
@@ -39,6 +40,22 @@ abstract class DomainObject {
                 assignProperty(property, (JsonElement) raw[property.name.capitalize()])
             }
         }
+    }
+
+    String asJson() {
+        List<MetaProperty> serializedProperties = metaClass.properties.findAll {
+            !excludedProperties.contains(it.name) && !Modifier.isStatic(it.modifiers)
+        }
+
+        Map json = [:]
+        serializedProperties.each {
+            json[it.name.capitalize()] = it.getProperty(this)
+        }
+
+        return new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                .create()
+                .toJson(json)
     }
 
     protected void assignWorkspaceRef(JsonObject raw) {

@@ -1,11 +1,13 @@
-package com.rallydev.intellij.wsapi
+package com.rallydev.intellij.wsapi.client
 
 import com.google.common.util.concurrent.FutureCallback
 import com.intellij.util.net.HttpConfigurable
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.util.AsyncService
+import com.rallydev.intellij.wsapi.ApiResponse
 import org.apache.commons.httpclient.HostConfiguration
 import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.HttpState
 import org.apache.commons.httpclient.HttpStatus
 import org.apache.commons.httpclient.UsernamePasswordCredentials
@@ -16,7 +18,7 @@ import spock.util.concurrent.BlockingVariable
 
 class RallyClientSpec extends BaseContainerSpec {
 
-    def "properties come from config instance"() {
+    def 'properties come from config instance'() {
         given:
         RallyClient client = new RallyClient(Mock(AsyncService))
 
@@ -26,7 +28,53 @@ class RallyClientSpec extends BaseContainerSpec {
         client.password == config.password
     }
 
-    def "makeRequest stores password prompt results"() {
+    def 'client makes GET request to proper URI'() {
+        given:
+        RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
+        HttpMethod executedMethod = null
+
+        and:
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> Mock(HttpState)
+        client.httpClient.executeMethod(_ as HttpMethod) >> { HttpMethod method ->
+            executedMethod = method
+            HttpStatus.SC_OK
+        }
+
+        when:
+        client.makeRequest(Mock(GetRequest) {
+            getEncodedUrl(_) >> 'http://www.getrequest.com/'
+        })
+
+        then:
+        executedMethod.name == 'GET'
+        executedMethod.URI as String == 'http://www.getrequest.com/'
+    }
+
+    def 'client makes POST request to proper URI'() {
+        given:
+        RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
+        HttpMethod executedMethod = null
+
+        and:
+        client.httpClient = Mock(HttpClient)
+        client.httpClient.getState() >> Mock(HttpState)
+        client.httpClient.executeMethod(_ as HttpMethod) >> { HttpMethod method ->
+            executedMethod = method
+            HttpStatus.SC_OK
+        }
+
+        when:
+        client.makeRequest(Mock(PostRequest) {
+            getEncodedUrl() >> 'http://www.postrequest.com/'
+        })
+
+        then:
+        executedMethod.name == 'POST'
+        executedMethod.URI as String == 'http://www.postrequest.com/'
+    }
+
+    def 'making a request stores password prompt results'() {
         given:
         String password = 'first'
 
@@ -62,7 +110,7 @@ class RallyClientSpec extends BaseContainerSpec {
         config.password == password
     }
 
-    def "makeRequests does not prompt for password when set in config"() {
+    def 'making requests does not prompt for password when set in config'() {
         given:
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
         client.httpClient = Mock(HttpClient)
@@ -92,7 +140,7 @@ class RallyClientSpec extends BaseContainerSpec {
         0 * client.promptForPassword() >> {}
     }
 
-    def "unhandled status codes include code in exception message"() {
+    def 'unhandled status codes include code in exception message'() {
         given:
         RallyClient client = Spy(RallyClient, constructorArgs: [new AsyncService()])
         client.httpClient = Mock(HttpClient)
@@ -114,7 +162,7 @@ class RallyClientSpec extends BaseContainerSpec {
         e.message.contains('409')
     }
 
-    def "auth failure clears the cached password"() {
+    def 'auth failure clears the cached password'() {
         BlockingVariable done = new BlockingVariable()
 
         given:
@@ -154,7 +202,7 @@ class RallyClientSpec extends BaseContainerSpec {
         thrown(InvalidCredentialsException)
     }
 
-    def "proxy is used when globally configured"() {
+    def 'proxy is used when globally configured'() {
         given:
         String proxyHost = 'localhost'
         Integer proxyPort = 8080
@@ -189,7 +237,7 @@ class RallyClientSpec extends BaseContainerSpec {
         1 * hostConfiguration.setProxy(proxyHost, proxyPort)
     }
 
-    def "authenticated proxy is used when globally configured"() {
+    def 'authenticated proxy is used when globally configured'() {
         given:
         String proxyPassword = 'monkey'
         String proxyUserName = 'bob'

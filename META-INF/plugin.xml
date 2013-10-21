@@ -42,8 +42,8 @@
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller"
                             serviceImplementation="com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller"/>
 
-        <applicationService serviceInterface="com.rallydev.intellij.wsapi.RallyClient"
-                            serviceImplementation="com.rallydev.intellij.wsapi.RallyClient"/>
+        <applicationService serviceInterface="com.rallydev.intellij.wsapi.client.RallyClient"
+                            serviceImplementation="com.rallydev.intellij.wsapi.client.RallyClient"/>
 
         <applicationService serviceInterface="com.rallydev.intellij.wsapi.cache.ProjectCache"
                             serviceImplementation="com.rallydev.intellij.wsapi.cache.ProjectCache"/>

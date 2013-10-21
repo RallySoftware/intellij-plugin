@@ -10,7 +10,7 @@ class ApiResponse {
     JsonElement json
 
     ApiResponse(String jsonString) {
-        json = new JsonParser().parse(jsonString)
+        json = new JsonParser().parse(jsonString ?: '')
     }
 
     JsonArray getResults() {

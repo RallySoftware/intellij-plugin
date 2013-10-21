@@ -1,6 +1,8 @@
 package com.rallydev.intellij.wsapi
 
 import com.google.gson.JsonObject
+import com.rallydev.intellij.wsapi.client.GetRequest
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
 import com.rallydev.intellij.wsapi.domain.DomainObject
 

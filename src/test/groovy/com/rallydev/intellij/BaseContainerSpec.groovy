@@ -6,30 +6,25 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.testFramework.LightPlatformTestCase
 import com.intellij.testFramework.UsefulTestCase
-import com.intellij.util.ui.UIUtil
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.tool.OpenArtifacts
 import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.ApiResponse
-import com.rallydev.intellij.wsapi.GetRequest
-import com.rallydev.intellij.wsapi.RallyClient
+import com.rallydev.intellij.wsapi.client.GetRequest
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.cache.ProjectCache
 import com.rallydev.intellij.wsapi.cache.ProjectCacheService
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCache
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.cache.WorkspaceCache
 import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
-import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
-import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.AttributeDefinition
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
 import com.rallydev.intellij.wsapi.domain.Workspace
-import com.sun.tools.corba.se.idl.TypedefEntry
 import org.jetbrains.annotations.NotNull
 import org.picocontainer.MutablePicoContainer
 import spock.lang.Specification
@@ -196,6 +191,5 @@ abstract class BaseContainerSpec extends Specification {
     String getName() {
         'hello'
     }
-
 
 }

@@ -19,7 +19,7 @@ class Artifact extends DomainObject {
 
     @Override
     List<String> getExcludedProperties() {
-        EXCLUDED_PROPERTIES + ['project']
+        EXCLUDED_PROPERTIES + ['project', 'projectName']
     }
 
     @Override

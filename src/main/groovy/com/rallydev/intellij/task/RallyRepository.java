@@ -8,7 +8,7 @@ import com.intellij.tasks.impl.BaseRepositoryImpl;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.rallydev.intellij.config.RallyConfig;
 import com.rallydev.intellij.wsapi.ConnectionTest;
-import com.rallydev.intellij.wsapi.RallyClient;
+import com.rallydev.intellij.wsapi.client.RallyClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;

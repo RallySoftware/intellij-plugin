@@ -1,4 +1,4 @@
-package com.rallydev.intellij.wsapi
+package com.rallydev.intellij.wsapi.client
 
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.ListenableFuture
@@ -12,18 +12,23 @@ import com.rallydev.intellij.config.PasswordNotConfiguredException
 import com.rallydev.intellij.config.RallyConfig
 import com.rallydev.intellij.config.RallyPasswordDialog
 import com.rallydev.intellij.util.AsyncService
+import com.rallydev.intellij.wsapi.ApiResponse
 import org.apache.commons.httpclient.HttpClient
+import org.apache.commons.httpclient.HttpMethod
 import org.apache.commons.httpclient.HttpStatus
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager
 import org.apache.commons.httpclient.UsernamePasswordCredentials
 import org.apache.commons.httpclient.auth.AuthScope
 import org.apache.commons.httpclient.auth.InvalidCredentialsException
 import org.apache.commons.httpclient.methods.GetMethod
+import org.apache.commons.httpclient.methods.PostMethod
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 
 class RallyClient {
     private static final Logger log = Logger.getInstance(this)
+
+    static final String WSAPI_VERSION = '1.43'
 
     AsyncService asyncService
     HttpClient httpClient
@@ -39,7 +44,7 @@ class RallyClient {
         return ServiceManager.getService(RallyClient.class)
     }
 
-    ListenableFuture<ApiResponse> makeRequest(@NotNull GetRequest request, @Nullable FutureCallback<ApiResponse> callback) {
+    ListenableFuture<ApiResponse> makeRequest(@NotNull RallyRequest request, @Nullable FutureCallback<ApiResponse> callback) {
         ensurePasswordLoaded()
         Closure<ApiResponse> requestCall = {
             doMakeRequest(request)
@@ -48,17 +53,17 @@ class RallyClient {
         return asyncService.schedule(requestCall, callback)
     }
 
-    ApiResponse makeRequest(@NotNull GetRequest request) {
+    ApiResponse makeRequest(@NotNull RallyRequest request) {
         ensurePasswordLoaded()
         doMakeRequest(request)
     }
 
-    private ApiResponse doMakeRequest(@NotNull GetRequest request) {
+    private ApiResponse doMakeRequest(@NotNull RallyRequest request) {
         httpClient.state.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(getUsername(), getPassword()))
         configureProxy()
 
-        GetMethod method = buildMethod(request)
-        log.info "Rally Client requesting\n\t\t${method.URI}"
+        HttpMethod method = buildMethod(request)
+        log.info "Rally Client making [$method.name] on:\n\t\t${method.URI}"
 
         int code = httpClient.executeMethod(method)
         try {
@@ -95,13 +100,23 @@ settings 'HTTP Proxy' -> 'Proxy authentication'
         }
     }
 
-    protected GetMethod buildMethod(GetRequest request) {
-        GetMethod method = new GetMethod(request.getEncodedUrl(getServer()))
+    protected HttpMethod buildMethod(RallyRequest request) {
+        HttpMethod method = null
+        switch (request.class) {
+            case GetRequest:
+                GetRequest getRequest = (GetRequest) request
+                method = new GetMethod(getRequest.getEncodedUrl(getServer()))
+                break
+            case PostRequest:
+                PostRequest postRequest = (PostRequest) request
+                method = new PostMethod(postRequest.encodedUrl)
+        }
+
         method.addRequestHeader('X-RallyIntegrationName', 'IntelliJ Plugin')
         method.addRequestHeader('X-RallyIntegrationVendor', 'Rally Software')
         method.addRequestHeader('X-RallyIntegrationPlatform', "${ApplicationInfo.instance?.build}")
 
-        method
+        return method
     }
 
     protected String promptForPassword() {

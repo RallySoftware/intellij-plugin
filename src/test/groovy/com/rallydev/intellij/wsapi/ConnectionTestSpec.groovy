@@ -2,6 +2,7 @@ package com.rallydev.intellij.wsapi
 
 import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.SpecUtils
+import com.rallydev.intellij.wsapi.client.RallyClient
 
 class ConnectionTestSpec extends BaseContainerSpec {
 
