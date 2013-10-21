@@ -8,6 +8,8 @@ import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.ErrorMessageFutureCallback
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
+import com.rallydev.intellij.wsapi.client.PostRequest
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.AttributeDefinition
 import com.rallydev.intellij.wsapi.domain.Requirement
@@ -70,7 +72,20 @@ class ArtifactTabImpl extends ArtifactTab {
         setupAndPopulateDynamicFields()
 
         setupViewButton()
+        setupSaveButton()
         openTaskContextButton.addActionListener(new OpenTaskListener(project, artifact))
+    }
+
+    String getFieldValue(String fieldName) {
+        String value = null
+        if (dynamicFields.containsKey(fieldName)) {
+            switch (dynamicFields[fieldName].class) {
+                case JComboBox:
+                    value = ((JComboBox) dynamicFields[fieldName]).selectedItem as String
+            }
+        }
+
+        return value
     }
 
     private void setupDefaultFields() {
@@ -179,25 +194,22 @@ class ArtifactTabImpl extends ArtifactTab {
         })
     }
 
-    void viewInRally() {
+    private void setupSaveButton() {
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            void actionPerformed(ActionEvent actionEvent) {
+                RallyClient.instance.makeRequest(new PostRequest(domainObject: artifact))
+            }
+        })
+    }
+
+    private void viewInRally() {
         String url = "${RallyConfig.instance.url}/#/search?keywords=${artifact.formattedID}"
         launchBrowser(url)
     }
 
-    void launchBrowser(String url) {
+    private void launchBrowser(String url) {
         BrowserUtil.launchBrowser(url)
-    }
-
-    String getFieldValue(String fieldName) {
-        String value = null
-        if (dynamicFields.containsKey(fieldName)) {
-            switch (dynamicFields[fieldName].class) {
-                case JComboBox:
-                    value = ((JComboBox) dynamicFields[fieldName]).selectedItem as String
-            }
-        }
-
-        return value
     }
 
     private GridBagConstraints getLabelConstraints(int row) {

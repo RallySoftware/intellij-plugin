@@ -12,9 +12,10 @@ public class ArtifactTab {
 
     protected JPanel dynamicFieldsPanel;
 
-    protected JButton viewInRallyButton;
     protected JPanel buttonPanel;
+    protected JButton viewInRallyButton;
     protected JButton openTaskContextButton;
+    protected JButton saveButton;
 
     protected ArtifactTab() { }
 
