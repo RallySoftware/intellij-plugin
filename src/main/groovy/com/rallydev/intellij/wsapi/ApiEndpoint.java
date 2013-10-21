@@ -43,16 +43,16 @@ public enum ApiEndpoint {
 
     public String getTypeDefinitionElementName() {
         switch (this) {
+            case ATTRIBUTE_DEFINITION:
+                return "AttributeDefinition";
             case DEFECT:
                 return "Defect";
             case HIERARCHICAL_REQUIREMENT:
                 return "HierarchicalRequirement";
-            case TASK:
-                return "Task";
             case PROJECT:
                 return "Project";
-            case ATTRIBUTE_DEFINITION:
-                return "AttributeDefinition";
+            case TASK:
+                return "Task";
             case TYPE_DEFINITION:
                 return "TypeDefinition";
             case WORKSPACE:
@@ -68,10 +68,14 @@ public enum ApiEndpoint {
                 return Defect.class;
             case HIERARCHICAL_REQUIREMENT:
                 return Requirement.class;
-            case TASK:
-                return Task.class;
             case PROJECT:
                 return Project.class;
+            case TASK:
+                return Task.class;
+            case TYPE_DEFINITION:
+                return TypeDefinition.class;
+            case WORKSPACE:
+                return Workspace.class;
             default:
                 throw new IllegalArgumentException("No domain class for " + this);
         }

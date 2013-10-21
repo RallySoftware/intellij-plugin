@@ -97,7 +97,7 @@ class RallyConfigFormSpec extends BaseContainerSpec {
         !form.passwordChanged
     }
 
-    def "Configed password is cleared when applying without remember"() {
+    def "Configured password is cleared when applying without remember"() {
         given:
         RallyConfigForm form = new RallyConfigForm()
         form.createComponent()

@@ -8,6 +8,7 @@ import com.rallydev.intellij.BaseContainerSpec
 import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
+import com.rallydev.intellij.wsapi.domain.DomainObject
 import com.rallydev.intellij.wsapi.domain.Requirement
 
 class DaoResponseUnmarshallerSpec extends BaseContainerSpec {
@@ -30,11 +31,12 @@ class DaoResponseUnmarshallerSpec extends BaseContainerSpec {
         ApiResponse apiResponse = new ApiResponse(DaoResponseUnmarshallerSpec.classLoader.getResourceAsStream('single_requirement.json').text)
 
         when:
-        Artifact domainObject = unmarshaller.buildDomainObject(Artifact, apiResponse)
+        DomainObject domainObject = unmarshaller.buildDomainObject(Artifact, apiResponse)
 
         then:
         domainObject.class == Requirement
         domainObject.objectID == "14345"
+        domainObject._type == 'HierarchicalRequirement'
     }
 
     def "Un-marshall result from domain objects in JSON"() {
@@ -45,11 +47,12 @@ class DaoResponseUnmarshallerSpec extends BaseContainerSpec {
         JsonObject singleResult = parsedJson['QueryResult']['Results'].elements[0]
 
         when:
-        Artifact domainObject = unmarshaller.buildDomainObject(Artifact, singleResult)
+        DomainObject domainObject = unmarshaller.buildDomainObject(Artifact, singleResult)
 
         then:
         domainObject.class == Requirement
         domainObject.objectID == "14345"
+        domainObject._type == 'HierarchicalRequirement'
     }
 
     def "Un-marshall should not instantiate something that is not a subtype"() {

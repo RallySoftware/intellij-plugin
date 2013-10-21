@@ -18,6 +18,7 @@ abstract class DomainObject {
     String objectID
     Date creationDate
     String _ref
+    String _type
 
     String workspaceRef
 
@@ -47,10 +48,12 @@ abstract class DomainObject {
             !excludedProperties.contains(it.name) && !Modifier.isStatic(it.modifiers)
         }
 
-        Map json = [:]
+        Map jsonProperties = [:]
         serializedProperties.each {
-            json[it.name.capitalize()] = it.getProperty(this)
+            jsonProperties[it.name.capitalize()] = it.getProperty(this)
         }
+        Map json = [:]
+        json.put(get_type(), jsonProperties)
 
         return new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")

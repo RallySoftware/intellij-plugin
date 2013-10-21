@@ -10,4 +10,8 @@ class PostRequest implements RallyRequest {
         return domainObject._ref
     }
 
+    String getBody() {
+        return domainObject.asJson()
+    }
+
 }

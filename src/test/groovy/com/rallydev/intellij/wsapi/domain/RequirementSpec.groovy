@@ -44,8 +44,8 @@ class RequirementSpec extends Specification {
         Map serializedJson = new Gson().fromJson(requirement.asJson(), Map)
 
         then:
-        serializedJson[property]
-        serializedJson[property] == sourceJson['HierarchicalRequirement'][property]['value'] as String
+        serializedJson['HierarchicalRequirement'][property]
+        serializedJson['HierarchicalRequirement'][property] == sourceJson['HierarchicalRequirement'][property]['value'] as String
 
         where:
         property << [

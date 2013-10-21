@@ -12,7 +12,6 @@ class Artifact extends DomainObject {
     Date lastUpdateDate
     String description
     String notes
-    String _type
 
     String project
     String projectName

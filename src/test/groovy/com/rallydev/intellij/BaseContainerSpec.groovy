@@ -13,6 +13,7 @@ import com.rallydev.intellij.util.AsyncService
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.ApiEndpoint
 import com.rallydev.intellij.wsapi.ApiResponse
+import com.rallydev.intellij.wsapi.cache.CacheManager
 import com.rallydev.intellij.wsapi.client.GetRequest
 import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.cache.ProjectCache
@@ -21,6 +22,7 @@ import com.rallydev.intellij.wsapi.cache.TypeDefinitionCache
 import com.rallydev.intellij.wsapi.cache.TypeDefinitionCacheService
 import com.rallydev.intellij.wsapi.cache.WorkspaceCache
 import com.rallydev.intellij.wsapi.cache.WorkspaceCacheService
+import com.rallydev.intellij.wsapi.dao.DaoResponseUnmarshaller
 import com.rallydev.intellij.wsapi.domain.AttributeDefinition
 import com.rallydev.intellij.wsapi.domain.Project
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
@@ -102,6 +104,8 @@ abstract class BaseContainerSpec extends Specification {
         registerComponentInstance(AsyncService.name, asyncService)
 
         registerComponentImplementation(OpenArtifacts)
+        registerComponentImplementation(CacheManager)
+        registerComponentImplementation(DaoResponseUnmarshaller)
     }
 
     protected void setupWorkspaces(RallyClient recordingClient) {

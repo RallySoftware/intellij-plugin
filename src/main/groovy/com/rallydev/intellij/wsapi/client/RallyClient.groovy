@@ -110,6 +110,7 @@ settings 'HTTP Proxy' -> 'Proxy authentication'
             case PostRequest:
                 PostRequest postRequest = (PostRequest) request
                 method = new PostMethod(postRequest.encodedUrl)
+                method.setRequestBody(postRequest.body)
         }
 
         method.addRequestHeader('X-RallyIntegrationName', 'IntelliJ Plugin')

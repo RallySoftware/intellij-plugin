@@ -27,6 +27,8 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.ItemEvent
+import java.awt.event.ItemListener
 
 import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
@@ -167,6 +169,14 @@ class ArtifactTabImpl extends ArtifactTab {
         scheduleStateAttributeDefinition.allowedValues.each { allowedValue ->
             scheduleStateComboBox.addItem(allowedValue)
         }
+        scheduleStateComboBox.addItemListener(new ItemListener() {
+            @Override
+            void itemStateChanged(ItemEvent event) {
+                if (event.getStateChange() == ItemEvent.SELECTED) {
+                    requirement.scheduleState = event.item
+                }
+            }
+        })
 
         SwingService.instance.queueForUiThread {
             scheduleStateComboBox.selectedItem = requirement.scheduleState
@@ -203,12 +213,12 @@ class ArtifactTabImpl extends ArtifactTab {
         })
     }
 
-    private void viewInRally() {
+    void viewInRally() {
         String url = "${RallyConfig.instance.url}/#/search?keywords=${artifact.formattedID}"
         launchBrowser(url)
     }
 
-    private void launchBrowser(String url) {
+    void launchBrowser(String url) {
         BrowserUtil.launchBrowser(url)
     }
 

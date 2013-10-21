@@ -10,13 +10,13 @@ class WorkspaceCacheServiceSpec extends BaseContainerSpec {
         registerComponentImplementation(WorkspaceCacheService)
     }
 
-    def "getInstance returns registered instance"() {
+    def 'getInstance returns registered instance'() {
         expect:
         WorkspaceCacheService.getInstance()
         WorkspaceCacheService.getInstance().class == WorkspaceCacheService
     }
 
-    def "DI is correct for workspace cache setup"() {
+    def 'DI is correct for workspace cache setup'() {
         when:
         WorkspaceCacheService cache = ServiceManager.getService(WorkspaceCacheService.class)
 
@@ -25,18 +25,18 @@ class WorkspaceCacheServiceSpec extends BaseContainerSpec {
         cache.rallyClient
     }
 
-    def "primed should be false when workspaces are not cached"() {
+    def 'primed should be false when workspaces are not cached'() {
         given:
         WorkspaceCacheService cache = ServiceManager.getService(WorkspaceCacheService.class)
 
-        when: "only adding loaded on but not workspaces into cache"
+        when: 'only adding loaded on but not workspaces into cache'
         cache.cache.loadedOn = new Date()
 
         then:
         !cache.getIsPrimed()
     }
 
-    def "primed true once cache is loaded"() {
+    def 'primed true once cache is loaded'() {
         given:
         WorkspaceCacheService cache = ServiceManager.getService(WorkspaceCacheService.class)
 
@@ -47,18 +47,18 @@ class WorkspaceCacheServiceSpec extends BaseContainerSpec {
         cache.getIsPrimed()
     }
 
-    def "primed should be false when loaded on is not cached"() {
+    def 'primed should be false when loaded on is not cached'() {
         given:
         WorkspaceCacheService cache = ServiceManager.getService(WorkspaceCacheService.class)
 
-        when: "only adding workspace but not loaded on into cache"
+        when: 'only adding workspace but not loaded on into cache'
         cache.cache.workspaces = []
 
         then:
         !cache.getIsPrimed()
     }
 
-    def "clear voids cached workspaces"() {
+    def 'clear voids cached workspaces'() {
         given:
         WorkspaceCacheService cache = ServiceManager.getService(WorkspaceCacheService.class)
         cache.getCachedWorkspaces()
