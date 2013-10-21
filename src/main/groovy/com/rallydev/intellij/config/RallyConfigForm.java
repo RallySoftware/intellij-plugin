@@ -1,7 +1,11 @@
 package com.rallydev.intellij.config;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.rallydev.intellij.tool.SearchWindow;
+import com.rallydev.intellij.tool.SearchWindowImpl;
+import com.rallydev.intellij.wsapi.cache.CacheManager;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +17,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class RallyConfigForm implements SearchableConfigurable {
-
+    private static final Logger log = Logger.getInstance(RallyConfigForm.class);
     private static final String PASSWORD_PLACEHOLDER = "passwordPlaceholderpasswordPlaceholder";
 
     private JPanel configPanel;
@@ -157,6 +161,8 @@ public class RallyConfigForm implements SearchableConfigurable {
             rallyConfig.setPassword(new String(password.getPassword()));
         }
         rallyConfig.rememberPassword = rememberPassword.isSelected();
+
+        CacheManager.getInstance().clearAllCaches();
     }
 
     @Override

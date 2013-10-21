@@ -83,14 +83,14 @@ abstract class BaseContainerSpec extends Specification {
         setupProjects(recordingClient)
         setupTypeDefinitions(recordingClient)
 
-        SwingService swingService = new SwingService()
-        swingService.metaClass.doInUiThread = { Closure closure ->
+        SwingService swingService = Spy(SwingService)
+        swingService.doInUiThread(_ as Closure) >> { Closure closure ->
             closure()
         }
-        swingService.metaClass.queueForUiThread = { Closure closure ->
+        swingService.queueForUiThread(_ as Closure) >> { Closure closure ->
             closure()
         }
-        registerComponentInstance(swingService)
+        registerComponentInstance(SwingService.name, swingService)
 
         AsyncService asyncService = new AsyncService()
         asyncService.metaClass.schedule = { Closure callable, FutureCallback callback ->

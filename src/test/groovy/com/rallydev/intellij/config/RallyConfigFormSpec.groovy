@@ -1,6 +1,7 @@
 package com.rallydev.intellij.config
 
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.wsapi.cache.CacheManager
 import spock.lang.Unroll
 
 class RallyConfigFormSpec extends BaseContainerSpec {
@@ -130,6 +131,20 @@ class RallyConfigFormSpec extends BaseContainerSpec {
 
         then:
         !form.password.enabled
+    }
+
+    def "apply clears caches"() {
+        given:
+        CacheManager cacheManager = Spy(CacheManager)
+        registerComponentInstance(CacheManager.name, cacheManager)
+
+        RallyConfigForm form = new RallyConfigForm()
+
+        when:
+        form.apply()
+
+        then:
+        1 * cacheManager.clearAllCaches()
     }
 
 }

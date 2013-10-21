@@ -32,7 +32,7 @@ class ProjectCacheService {
     }
 
     void clear() {
-        cache.projectsByWorkspace = null
+        cache.projectsByWorkspace.clear()
     }
 
 }

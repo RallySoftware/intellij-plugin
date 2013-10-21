@@ -24,7 +24,7 @@ class WorkspaceCacheService {
 
     //todo: Primed still used? Care about date?
     boolean getIsPrimed() {
-        cache.workspaces != null &&
+        cache.workspaces &&
                 cache.loadedOn != null
     }
 
@@ -37,6 +37,10 @@ class WorkspaceCacheService {
             }
         }
         cache.workspaces
+    }
+
+    void clear() {
+        cache.workspaces = null
     }
 
 }
