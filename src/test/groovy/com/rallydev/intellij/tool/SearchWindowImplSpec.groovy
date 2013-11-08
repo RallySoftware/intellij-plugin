@@ -7,10 +7,14 @@ import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.content.ContentManager
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.SpecUtils
 import com.rallydev.intellij.facade.ActionToolbarFacade
 import com.rallydev.intellij.util.SwingService
 import com.rallydev.intellij.wsapi.ApiEndpoint
+import com.rallydev.intellij.wsapi.ApiResponse
 import com.rallydev.intellij.wsapi.cache.CacheManager
+import com.rallydev.intellij.wsapi.client.GetRequest
+import com.rallydev.intellij.wsapi.client.RallyClient
 import com.rallydev.intellij.wsapi.domain.Artifact
 import com.rallydev.intellij.wsapi.domain.Defect
 import com.rallydev.intellij.wsapi.domain.Requirement
@@ -37,7 +41,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         1 * actionToolbarFacade.createActionToolbar(_) >> actionToolbar
     }
 
-    def "createToolWindowContent adds content"() {
+    def 'createToolWindowContent adds content'() {
         given: 'Mock out the IntelliJ pieces'
         setupActionToolbarMock()
 
@@ -52,15 +56,15 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         ContentManager contentManager = Mock(ContentManager)
         ToolWindow toolWindow = Mock(ToolWindow)
 
-        when: "ToolWindowFactory interface's createToolWindowContent invoked"
+        when: 'ToolWindowFactory interface createToolWindowContent invoked'
         searchWindow.createToolWindowContent(null, toolWindow)
 
-        then: "Content manager's add content is called"
+        then: 'Content manager add content is called'
         1 * toolWindow.getContentManager() >> contentManager
         1 * contentManager.addContent(_ as Content) >> {}
     }
 
-    def "setupWindow shows/hides loading & toggles interactivity"() {
+    def 'setupWindow shows/hides loading & toggles interactivity'() {
         given:
         setupActionToolbarMock()
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
@@ -77,7 +81,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         (1.._) * SwingService.instance.enableComponents(_)
     }
 
-    def "setupWindow populates labels from typedefs"() {
+    def 'setupWindow populates labels from typedefs'() {
         given:
         setupActionToolbarMock()
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
@@ -89,7 +93,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.projectLabel.text == typeDefinitions[ApiEndpoint.PROJECT].displayName
     }
 
-    def "setupWindow populates type choices"() {
+    def 'setupWindow populates type choices'() {
         given:
         setupActionToolbarMock()
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
@@ -107,7 +111,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.typeChoices.model.objects.contains typeDefinitions[ApiEndpoint.HIERARCHICAL_REQUIREMENT].displayName
     }
 
-    def "setupWindow populates project choices asynchronously"() {
+    def 'setupWindow populates project choices asynchronously'() {
         given:
         setupActionToolbarMock()
         SearchWindowImpl searchWindow = Spy(SearchWindowImpl)
@@ -132,7 +136,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.searchBox.enabled
     }
 
-    def "handleTableClick adds artifact open artifact"() {
+    def 'handleTableClick adds artifact open artifact'() {
         given:
         setupActionToolbarMock()
         SearchWindowImpl searchWindow = new SearchWindowImpl()
@@ -170,7 +174,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         1 * toolWindow.activate(_)
     }
 
-    def "getType correctly determines type from drop-down"() {
+    def 'getType correctly determines type from drop-down'() {
         given:
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         setupActionToolbarMock()
@@ -198,7 +202,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.selectedType == Task
     }
 
-    def "results table is not editable"() {
+    def 'results table is not editable'() {
         given:
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         setupActionToolbarMock()
@@ -216,7 +220,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         !searchWindow.resultsTable.isCellEditable(0, 0)
     }
 
-    def "searchAttributes returns list based on checkbox selection"() {
+    def 'searchAttributes returns list based on checkbox selection'() {
         when:
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         searchWindow.formattedIDCheckBox.selected = false
@@ -240,7 +244,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         searchWindow.searchAttributes == ['FormattedID', 'Name', 'Description']
     }
 
-    def "enable controls correctly changes state"() {
+    def 'enable controls correctly changes state'() {
         when:
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         searchWindow.enableControls(true)
@@ -255,7 +259,7 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         !searchWindow.searchButton.enabled
     }
 
-    def "clear empties results table"() {
+    def 'clear empties results table'() {
         given:
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         setupActionToolbarMock()
@@ -276,8 +280,16 @@ class SearchWindowImplSpec extends BaseContainerSpec {
         !searchWindow.resultsTable.model.size()
     }
 
-    def "workspaces are loaded on java.util.Observer's update"() {
-        given: 'a setup toolbar window'
+    def 'workspaces are loaded on java.util.Observer update'() {
+        given:
+        recordingClient = Mock(RallyClient)
+        recordingClient.makeRequest(_) >> { GetRequest request ->
+            recordingClientRequests << request.getUrl(config.url.toURL())
+            return new ApiResponse(SpecUtils.getTypedMinimalResponseJson('Workspace'))
+        }
+        registerComponentInstance(RallyClient.name, recordingClient)
+
+        and: 'a setup toolbar window'
         SearchWindowImpl searchWindow = new SearchWindowImpl()
         setupActionToolbarMock()
         searchWindow.setupWindow()

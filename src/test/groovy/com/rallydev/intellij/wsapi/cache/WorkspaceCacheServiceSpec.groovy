@@ -2,10 +2,21 @@ package com.rallydev.intellij.wsapi.cache
 
 import com.intellij.openapi.components.ServiceManager
 import com.rallydev.intellij.BaseContainerSpec
+import com.rallydev.intellij.SpecUtils
+import com.rallydev.intellij.wsapi.ApiResponse
+import com.rallydev.intellij.wsapi.client.GetRequest
+import com.rallydev.intellij.wsapi.client.RallyClient
 
 class WorkspaceCacheServiceSpec extends BaseContainerSpec {
 
     def setup() {
+        recordingClient = Mock(RallyClient)
+        recordingClient.makeRequest(_) >> { GetRequest request ->
+            recordingClientRequests << request.getUrl(config.url.toURL())
+            return new ApiResponse(SpecUtils.getTypedMinimalResponseJson('Workspace'))
+        }
+        registerComponentInstance(RallyClient.name, recordingClient)
+
         registerComponentImplementation(WorkspaceCache)
         registerComponentImplementation(WorkspaceCacheService)
     }

@@ -16,19 +16,20 @@ import com.rallydev.intellij.wsapi.domain.Requirement
 import com.rallydev.intellij.wsapi.domain.TypeDefinition
 import org.jetbrains.annotations.NotNull
 
+import javax.swing.BorderFactory
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JLabel
+import javax.swing.JScrollPane
 import javax.swing.JTextPane
 import javax.swing.border.EmptyBorder
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.awt.event.ItemEvent
-import java.awt.event.ItemListener
 
 import static com.rallydev.intellij.wsapi.ApiEndpoint.HIERARCHICAL_REQUIREMENT
 import static com.rallydev.intellij.wsapi.ApiEndpoint.PROJECT
@@ -44,15 +45,13 @@ class ArtifactTabImpl extends ArtifactTab {
     protected JLabel descriptionLabel = new JLabel(text: 'Description')
     protected JTextPane description = new JTextPane(
             preferredSize: new Dimension(0, 0), //force line-wraps rather than horizontal scrolling
-            contentType: 'text/html',
-            editable: false,
+            contentType: 'text/html'
     )
 
     protected JLabel notesLabel = new JLabel('Notes')
     protected JTextPane notes = new JTextPane(
             preferredSize: new Dimension(0, 0), //force line-wraps rather than horizontal scrolling
-            contentType: 'text/html',
-            editable: false,
+            contentType: 'text/html'
     )
 
     Project project
@@ -98,10 +97,10 @@ class ArtifactTabImpl extends ArtifactTab {
         dynamicFieldsPanel.add(lastUpdated, getFieldSimpleConstraints(1))
 
         dynamicFieldsPanel.add(descriptionLabel, getLabelConstraints(2))
-        dynamicFieldsPanel.add(description, getFieldTextConstraints(2, 2))
+        dynamicFieldsPanel.add(withScrollPane(description), getFieldTextConstraints(2, 2))
 
         dynamicFieldsPanel.add(notesLabel, getLabelConstraints(200))
-        dynamicFieldsPanel.add(notes, getFieldTextConstraints(200))
+        dynamicFieldsPanel.add(withScrollPane(notes), getFieldTextConstraints(200))
 
         dynamicFieldsPanel.revalidate()
         dynamicFieldsPanel.repaint()
@@ -112,14 +111,14 @@ class ArtifactTabImpl extends ArtifactTab {
         projectValue.text = artifact.projectName
         lastUpdated.text = artifact.formattedLastUpdateDate
 
-        description.text = "<html>${artifact.description ?: ''}</html>"
+        description.text = "${artifact.description ?: ''}"
         description.border = new EmptyBorder(5, 5, 5, 5)
+        description.addFocusListener(new PlanTextEditFocusListener())
 
-        notes.text = "<html>${artifact.notes ?: ''}</html>"
+        notes.text = "${artifact.notes ?: ''}"
         notes.border = new EmptyBorder(5, 5, 5, 5)
+        notes.addFocusListener(new PlanTextEditFocusListener())
     }
-
-
 
     private void loadLabels() {
         Closure<TypeDefinition> call = {
@@ -150,6 +149,10 @@ class ArtifactTabImpl extends ArtifactTab {
             FutureCallback<TypeDefinition> callback = new ErrorMessageFutureCallback<TypeDefinition>() {
                 void onSuccess(TypeDefinition typeDefinition) {
                     populateRequirementFields(typeDefinition, (Requirement) artifact)
+
+                    ComponentBinder binder = new ComponentBinder(artifact)
+                    binder.bind(description, 'description')
+                    binder.bind(notes, 'notes')
                 }
 
                 void onFailure(Throwable error) {
@@ -165,18 +168,12 @@ class ArtifactTabImpl extends ArtifactTab {
         //setup schedule state
         AttributeDefinition scheduleStateAttributeDefinition = typeDefinition.findAttributeDefinition("ScheduleState")
         JComboBox scheduleStateComboBox = new JComboBox()
-        dynamicFields.put("scheduleState", scheduleStateComboBox)
+        dynamicFields.put('scheduleState', scheduleStateComboBox)
         scheduleStateAttributeDefinition.allowedValues.each { allowedValue ->
             scheduleStateComboBox.addItem(allowedValue)
         }
-        scheduleStateComboBox.addItemListener(new ItemListener() {
-            @Override
-            void itemStateChanged(ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.SELECTED) {
-                    requirement.scheduleState = event.item
-                }
-            }
-        })
+        ComponentBinder binder = new ComponentBinder(requirement)
+        binder.bind(scheduleStateComboBox, 'scheduleState')
 
         SwingService.instance.queueForUiThread {
             scheduleStateComboBox.selectedItem = requirement.scheduleState
@@ -249,6 +246,12 @@ class ArtifactTabImpl extends ArtifactTab {
                 insets: defaultInsets,
                 fill: GridBagConstraints.BOTH
         )
+    }
+
+    private JScrollPane withScrollPane(Component component) {
+        JScrollPane pane = new JScrollPane(component)
+        pane.border = BorderFactory.createEmptyBorder()
+        return pane
     }
 
     private Insets getDefaultInsets() {

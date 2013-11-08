@@ -70,12 +70,14 @@ class ArtifactTableImplSpec extends BaseContainerSpec {
         hasLabelWithValue(artifactTab, requirement.formattedLastUpdateDate)
 
         and:
+        //todo: failing due to Scroll pane around description
         hasLabelWithValue(artifactTab, 'Description')
         artifactTab.dynamicFieldsPanel.components.find {
             it.hasProperty('text') && it.text.contains(requirement.description)
         }
 
         and:
+        //todo: failing due to Scroll pane around notes
         hasLabelWithValue(artifactTab, 'Notes')
         artifactTab.dynamicFieldsPanel.components.find {
             it.hasProperty('text') && it.text.contains(requirement.notes)
