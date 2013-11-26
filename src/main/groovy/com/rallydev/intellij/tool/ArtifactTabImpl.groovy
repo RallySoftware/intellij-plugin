@@ -43,13 +43,13 @@ class ArtifactTabImpl extends ArtifactTab {
     protected JLabel lastUpdated = new JLabel()
 
     protected JLabel descriptionLabel = new JLabel(text: 'Description')
-    protected JTextPane description = new JTextPane(
+    protected CustomTextPane description = new CustomTextPane(
             preferredSize: new Dimension(0, 0), //force line-wraps rather than horizontal scrolling
             contentType: 'text/html'
     )
 
     protected JLabel notesLabel = new JLabel('Notes')
-    protected JTextPane notes = new JTextPane(
+    protected CustomTextPane notes = new CustomTextPane(
             preferredSize: new Dimension(0, 0), //force line-wraps rather than horizontal scrolling
             contentType: 'text/html'
     )
@@ -113,7 +113,7 @@ class ArtifactTabImpl extends ArtifactTab {
 
         description.text = "${artifact.description ?: ''}"
         description.border = new EmptyBorder(5, 5, 5, 5)
-        description.addFocusListener(new PlanTextEditFocusListener())
+        description.addFocusListener(new PlainTextEditFocusListenerIgnoreFirst())
 
         notes.text = "${artifact.notes ?: ''}"
         notes.border = new EmptyBorder(5, 5, 5, 5)
